@@ -1,0 +1,75 @@
+---
+import BaseLayout from "../layouts/BaseLayout.astro";
+import {
+  detailEntries, posts, formatDate, isoDate, summarise, authorFor,
+} from "../lib/content";
+import { site } from "../data/site";
+
+export function getStaticPaths() {
+  return detailEntries.map((entry) => ({ params: { slug: entry.slug }, props: { entry } }));
+}
+
+const { entry } = Astro.props;
+const author = authorFor(entry);
+const category = entry.categories[0];
+
+// Op een vergelijkingspagina staan tientallen productblokken; die krijgen wat
+// meer lucht dan een gewoon artikel.
+const proseClass = entry.kind === "magic" ? "prose prose--compare" : "prose";
+
+const related =
+  entry.kind === "post" ? posts.filter((p) => p.slug !== entry.slug).slice(0, 4) : [];
+
+const schema =
+  entry.kind === "post"
+    ? {
+        "@context": "https://schema.org",
+        "@type": "BlogPosting",
+        headline: entry.title,
+        datePublished: isoDate(entry.date),
+        dateModified: isoDate(entry.modified || entry.date),
+        author: { "@type": "Person", name: author?.name || site.name },
+        publisher: { "@type": "Organization", name: site.name },
+        mainEntityOfPage: site.domain + entry.path,
+        inLanguage: "nl-NL",
+      }
+    : null;
+---
+<BaseLayout
+  title={entry.seoTitle || entry.title + site.titleSuffix}
+  description={entry.seoDescription || summarise(entry)}
+  canonical={entry.canonical || site.domain + entry.path}
+  image={entry.featuredImage || entry.ogImage}
+  type={entry.kind === "post" ? "article" : "website"}
+>
+  {schema && (
+    <script slot="head" is:inline type="application/ld+json" set:html={JSON.stringify(schema)} />
+  )}
+
+  <article class="page">
+    <div class="page__wrap">
+      {entry.kind === "post" && (
+        <p class="meta">
+          {category && <a href={`/category/${category.slug}/`}>{category.name}</a>}
+          {author && <a href={`/author/${author.slug}/`}>{author.name}</a>}
+          <time datetime={isoDate(entry.date)}>{formatDate(entry.date)}</time>
+        </p>
+      )}
+      <div class={proseClass} set:html={entry.content} />
+    </div>
+
+    {related.length > 0 && (
+      <div class="wrap">
+        <div class="block-head"><h2>Meer blogs</h2><a href="/category/blog/">Alle blogs</a></div>
+        <div class="card-grid">
+          {related.map((post) => (
+            <article class="card">
+              <h3><a href={post.path}>{post.title}</a></h3>
+              <p>{summarise(post, 100)}</p>
+            </article>
+          ))}
+        </div>
+      </div>
+    )}
+  </article>
+</BaseLayout>

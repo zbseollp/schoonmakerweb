@@ -1,0 +1,41 @@
+---
+import BaseLayout from "../../../../layouts/BaseLayout.astro";
+import Archive from "../../../../components/Archive.astro";
+import Pagination from "../../../../components/Pagination.astro";
+import { categories, postsInCategory, chunk } from "../../../../lib/content";
+import { site, ARCHIVE_PER_PAGE as PER } from "../../../../data/site";
+
+export function getStaticPaths() {
+  const paths = [];
+  for (const c of categories) {
+    const pages = chunk(postsInCategory(c.slug), PER);
+    for (let i = 1; i < pages.length; i++) {
+      paths.push({
+        params: { cat: c.slug, page: String(i + 1) },
+        props: { category: c, n: i + 1, total: pages.length, items: pages[i] },
+      });
+    }
+  }
+  return paths;
+}
+
+const { category, n, total, items } = Astro.props;
+---
+<BaseLayout
+  title={`Category: ${category.name} - pagina ${n}${site.titleSuffix}`}
+  canonical={`${site.domain}/category/${category.slug}/page/${n}/`}
+  noindex
+>
+  <div class="page">
+    <div class="page__wrap">
+      <h1>Category: {category.name}</h1>
+      <p class="meta">Pagina {n} van {total}</p>
+      <Archive posts={items} />
+      <Pagination
+        current={n}
+        total={total}
+        href={(p) => (p === 1 ? `/category/${category.slug}/` : `/category/${category.slug}/page/${p}/`)}
+      />
+    </div>
+  </div>
+</BaseLayout>

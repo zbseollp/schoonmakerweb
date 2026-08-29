@@ -1,0 +1,33 @@
+---
+import BaseLayout from "../../../layouts/BaseLayout.astro";
+import Archive from "../../../components/Archive.astro";
+import Pagination from "../../../components/Pagination.astro";
+import { authorList, postsByAuthor, chunk } from "../../../lib/content";
+import { site, ARCHIVE_PER_PAGE as PER } from "../../../data/site";
+
+export function getStaticPaths() {
+  return authorList.map((a) => ({ params: { author: a.slug }, props: { author: a } }));
+}
+
+const { author } = Astro.props;
+const all = postsByAuthor(author.id);
+const pages = chunk(all, PER);
+---
+<BaseLayout
+  title={`Author: ${author.name}${site.titleSuffix}`}
+  description={`Alle blogs van ${author.name} op ${site.name}.`}
+  canonical={`${site.domain}/author/${author.slug}/`}
+>
+  <div class="page">
+    <div class="page__wrap">
+      <h1>Author: {author.name}</h1>
+      <p class="meta">{all.length} blogs</p>
+      <Archive posts={pages[0]} />
+      <Pagination
+        current={1}
+        total={pages.length}
+        href={(n) => (n === 1 ? `/author/${author.slug}/` : `/author/${author.slug}/page/${n}/`)}
+      />
+    </div>
+  </div>
+</BaseLayout>

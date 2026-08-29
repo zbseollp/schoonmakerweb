@@ -1,0 +1,50 @@
+---
+import BaseLayout from "../layouts/BaseLayout.astro";
+import { posts, magic, pages, categories, pageByPath, postsInCategory, authorList } from "../lib/content";
+import { site, nav } from "../data/site";
+
+const page = pageByPath("/sitemap/");
+---
+<BaseLayout
+  title={page?.seoTitle || "Sitemap" + site.titleSuffix}
+  description={page?.seoDescription || "Een overzicht van alles op Schoonmakerweb."}
+  canonical={site.domain + "/sitemap/"}
+>
+  <div class="page">
+    <div class="wrap">
+      <h1>Sitemap</h1>
+      <div class="sitemap-columns" style="margin-top:2rem">
+        <div>
+          <h2>Pagina's</h2>
+          <ul>
+            {nav.map((i) => <li><a href={i.href}>{i.label}</a></li>)}
+            {pages.map((p) => <li><a href={p.path}>{p.title}</a></li>)}
+            <li><a href="/sitemap/">Sitemap</a></li>
+          </ul>
+        </div>
+        <div>
+          <h2>Categorieën</h2>
+          <ul>
+            {categories.map((c) => (
+              <li><a href={`/category/${c.slug}/`}>{c.name}</a> ({postsInCategory(c.slug).length})</li>
+            ))}
+          </ul>
+          <h2 style="margin-top:1.5rem">Auteurs</h2>
+          <ul>
+            {authorList.map((a) => <li><a href={`/author/${a.slug}/`}>{a.name}</a></li>)}
+          </ul>
+        </div>
+      </div>
+
+      <div class="block-head"><h2>Vergelijkingen ({magic.length})</h2></div>
+      <div class="sitemap-columns">
+        <ul>{magic.map((m) => <li><a href={m.path}>{m.title}</a></li>)}</ul>
+      </div>
+
+      <div class="block-head"><h2>Blogs ({posts.length})</h2></div>
+      <div class="sitemap-columns">
+        <ul>{posts.map((p) => <li><a href={p.path}>{p.title}</a></li>)}</ul>
+      </div>
+    </div>
+  </div>
+</BaseLayout>

@@ -1,0 +1,15 @@
+---
+import type { Entry } from "../lib/content";
+import { formatDate, isoDate, summarise } from "../lib/content";
+interface Props { posts: Entry[] }
+const { posts } = Astro.props;
+---
+<div class="archive">
+  {posts.map((post) => (
+    <article class="archive__item">
+      <h2><a href={post.path}>{post.title}</a></h2>
+      <p class="meta"><time datetime={isoDate(post.date)}>{formatDate(post.date)}</time></p>
+      <p>{summarise(post, 165)}</p>
+    </article>
+  ))}
+</div>

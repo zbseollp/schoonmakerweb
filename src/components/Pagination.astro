@@ -1,0 +1,29 @@
+---
+/** Paginatie in de vorm die de oude site gebruikte: /blog/ en /blog/2/. */
+interface Props {
+  current: number;
+  total: number;
+  href: (page: number) => string;
+}
+const { current, total, href } = Astro.props;
+
+const span = 2;
+const numbers: (number | "gap")[] = [];
+for (let n = 1; n <= total; n++) {
+  if (n === 1 || n === total || Math.abs(n - current) <= span) numbers.push(n);
+  else if (numbers[numbers.length - 1] !== "gap") numbers.push("gap");
+}
+---
+{total > 1 && (
+  <nav class="pagination" aria-label="Paginanavigatie">
+    {current > 1 && <a href={href(current - 1)} rel="prev">Vorige</a>}
+    {numbers.map((n) =>
+      n === "gap"
+        ? <span aria-hidden="true">…</span>
+        : n === current
+          ? <span aria-current="page">{n}</span>
+          : <a href={href(n)}>{n}</a>
+    )}
+    {current < total && <a href={href(current + 1)} rel="next">Volgende</a>}
+  </nav>
+)}

@@ -1,0 +1,197 @@
+/* Schoonmakerweb — de huisstijl van de oude site: bordeaux #722B31 als
+   primaire kleur, marineblauw #04195A als accent, Poppins voor de koppen en
+   Inter voor de tekst. */
+:root {
+  --wine: #722b31;
+  --wine-dark: #571f24;
+  --wine-tint: #fbdada;
+  --navy: #04195a;
+  --navy-dark: #062360;
+  --navy-tint: #ecf2fe;
+  --ink: #2b2b2b;
+  --ink-soft: #464141;
+  --ink-muted: #808080;
+  --paper: #ffffff;
+  --surface-alt: #fafafa;
+  --line: #e6e6e6;
+  --line-strong: #cccccc;
+  --wrap: 1160px;
+  --radius: 10px;
+  --shadow: 0 1px 2px rgba(43, 43, 43, 0.05), 0 10px 28px -14px rgba(43, 43, 43, 0.18);
+  --font-head: "Poppins", "Segoe UI", system-ui, sans-serif;
+  --font-body: "Inter", "Segoe UI", system-ui, sans-serif;
+}
+
+*, *::before, *::after { box-sizing: border-box; }
+html { -webkit-text-size-adjust: 100%; }
+
+body {
+  margin: 0;
+  background: var(--paper);
+  color: var(--ink-soft);
+  font-family: var(--font-body);
+  font-size: 1.0625rem;
+  line-height: 1.7;
+  -webkit-font-smoothing: antialiased;
+  text-rendering: optimizeLegibility;
+}
+
+h1, h2, h3, h4, h5, h6 {
+  font-family: var(--font-head);
+  color: var(--ink);
+  font-weight: 600;
+  line-height: 1.22;
+  letter-spacing: -0.017em;
+  margin: 0 0 0.5em;
+  text-wrap: balance;
+}
+h1 { font-size: clamp(1.9rem, 1.45rem + 2vw, 2.7rem); }
+h2 { font-size: clamp(1.4rem, 1.2rem + 1vw, 1.85rem); }
+h3 { font-size: clamp(1.15rem, 1.05rem + 0.45vw, 1.32rem); }
+
+a { color: var(--wine); text-decoration: none; }
+a:hover { color: var(--wine-dark); text-decoration: underline; text-underline-offset: 0.18em; }
+img { max-width: 100%; height: auto; display: block; }
+:focus-visible { outline: 2px solid var(--navy); outline-offset: 3px; border-radius: 3px; }
+
+.wrap { width: min(100% - 2.5rem, var(--wrap)); margin-inline: auto; }
+.section { padding: clamp(2.25rem, 4.5vw, 3.5rem) 0; }
+.section--alt { background: var(--surface-alt); }
+
+.skip-link {
+  position: absolute; left: -9999px; top: 0; z-index: 100;
+  background: var(--navy); color: #fff; padding: 0.75rem 1.1rem;
+}
+.skip-link:focus { left: 0; }
+
+/* ---------- header ---------- */
+.site-header {
+  position: sticky; top: 0; z-index: 60;
+  background: rgba(255, 255, 255, 0.92);
+  backdrop-filter: saturate(1.6) blur(12px);
+  border-bottom: 1px solid var(--line);
+}
+.site-header__inner {
+  display: flex; align-items: center; justify-content: space-between;
+  gap: 1.5rem; padding: 0.85rem 0;
+}
+.brand {
+  font-family: var(--font-head); font-weight: 600; font-size: 1.25rem;
+  color: var(--wine); letter-spacing: -0.025em;
+}
+.brand:hover { text-decoration: none; color: var(--wine-dark); }
+
+.site-nav ul {
+  display: flex; flex-wrap: wrap; align-items: center; gap: 0.25rem;
+  list-style: none; margin: 0; padding: 0;
+}
+.site-nav a {
+  display: block; padding: 0.4rem 0.8rem; border-radius: 6px;
+  color: var(--ink-soft); font-family: var(--font-head);
+  font-size: 0.9375rem; font-weight: 500;
+  transition: background-color 0.15s ease, color 0.15s ease;
+}
+.site-nav a:hover { background: var(--surface-alt); color: var(--ink); text-decoration: none; }
+.site-nav a[aria-current="page"] { background: var(--wine-tint); color: var(--wine-dark); }
+
+/* ---------- inhoud ---------- */
+.page { padding: clamp(2rem, 4vw, 3rem) 0 clamp(2.5rem, 5vw, 4rem); }
+.page__wrap { width: min(100% - 2.5rem, 48rem); margin-inline: auto; }
+
+.prose { font-size: 1.09375rem; line-height: 1.76; }
+.prose > h1:first-child { margin-top: 0; }
+.prose h2 { margin: 2.4rem 0 0.6rem; padding-top: 1.5rem; border-top: 1px solid var(--line); }
+.prose h3 { margin: 1.8rem 0 0.5rem; }
+.prose p { margin: 0 0 1.2rem; }
+.prose ul, .prose ol { margin: 0 0 1.2rem; padding-left: 1.35rem; }
+.prose li { margin-bottom: 0.45rem; }
+.prose li::marker { color: var(--wine); }
+.prose a { text-decoration: underline; text-underline-offset: 0.16em; text-decoration-thickness: 1px; }
+.prose img { border-radius: var(--radius); margin: 1.6rem 0; }
+.prose blockquote {
+  margin: 1.75rem 0; padding: 0.1rem 0 0.1rem 1.2rem;
+  border-left: 3px solid var(--wine); font-size: 1.1rem; color: var(--ink);
+}
+.prose table { width: 100%; border-collapse: collapse; margin: 1.75rem 0; display: block; overflow-x: auto; }
+.prose th, .prose td { border-bottom: 1px solid var(--line); padding: 0.7rem 0.8rem; text-align: left; }
+.prose th { font-family: var(--font-head); color: var(--ink); font-weight: 600; }
+.prose hr { border: 0; border-top: 1px solid var(--line); margin: 2.25rem 0; }
+
+/* Productblokken op de vergelijkingspagina's: elke kop met de affiliate-knop
+   eronder krijgt wat lucht, zodat de lijst leesbaar blijft. */
+.prose--compare img { max-width: 320px; margin-inline: auto; }
+.prose--compare h2 { font-size: 1.3rem; }
+
+.meta {
+  display: flex; flex-wrap: wrap; align-items: center; gap: 0.5rem;
+  font-size: 0.875rem; color: var(--ink-muted); margin: 0 0 1.5rem;
+}
+.meta > * + *::before { content: "·"; margin-right: 0.5rem; color: var(--line-strong); }
+.meta a { color: var(--ink-muted); }
+
+/* ---------- archief ---------- */
+.archive { display: grid; }
+.archive__item { padding: 1.4rem 0; border-bottom: 1px solid var(--line); }
+.archive__item:first-child { padding-top: 0; }
+.archive__item:last-child { border-bottom: 0; }
+.archive__item h2 { font-size: clamp(1.1rem, 1.02rem + 0.4vw, 1.3rem); margin-bottom: 0.3rem; }
+.archive__item h2 a { color: var(--ink); }
+.archive__item h2 a:hover { color: var(--wine); text-decoration: none; }
+.archive__item p { margin: 0.35rem 0 0; color: var(--ink-muted); font-size: 0.9375rem; }
+
+/* ---------- paginatie ---------- */
+.pagination { display: flex; flex-wrap: wrap; gap: 0.4rem; margin-top: clamp(2rem, 4vw, 2.75rem); }
+.pagination a, .pagination span {
+  min-width: 2.5rem; padding: 0.45rem 0.75rem; text-align: center;
+  border: 1px solid var(--line-strong); border-radius: 6px; background: var(--paper);
+  font-family: var(--font-head); font-size: 0.9rem; font-weight: 500; color: var(--ink);
+  transition: border-color 0.15s ease, color 0.15s ease;
+}
+.pagination a:hover { border-color: var(--wine); color: var(--wine); text-decoration: none; }
+.pagination [aria-current="page"] { background: var(--wine); border-color: var(--wine); color: #fff; }
+
+/* ---------- kaarten ---------- */
+.card-grid { display: grid; gap: 1.5rem; grid-template-columns: repeat(auto-fill, minmax(250px, 1fr)); }
+.card {
+  border: 1px solid var(--line); border-radius: var(--radius);
+  padding: 1.1rem 1.25rem; background: var(--paper);
+  transition: border-color 0.15s ease, transform 0.15s ease;
+}
+.card:hover { border-color: var(--wine); transform: translateY(-2px); }
+.card h3 { font-size: 1.0625rem; margin: 0 0 0.3rem; }
+.card h3 a { color: var(--ink); }
+.card h3 a:hover { color: var(--wine); text-decoration: none; }
+.card p { margin: 0; font-size: 0.9rem; color: var(--ink-muted); }
+
+.block-head {
+  display: flex; align-items: baseline; justify-content: space-between; gap: 1rem;
+  margin: 2.5rem 0 1.25rem; padding-bottom: 0.7rem; border-bottom: 2px solid var(--wine);
+}
+.block-head h2 { margin: 0; }
+.block-head a { font-family: var(--font-head); font-size: 0.875rem; font-weight: 500; white-space: nowrap; }
+
+/* ---------- sitemap ---------- */
+.sitemap-columns { display: grid; gap: 2rem; grid-template-columns: repeat(auto-fit, minmax(250px, 1fr)); }
+.sitemap-columns h2 { font-size: 1.125rem; padding-bottom: 0.6rem; border-bottom: 1px solid var(--line); }
+.sitemap-columns ul { list-style: none; margin: 0; padding: 0; display: grid; gap: 0.45rem; }
+.sitemap-columns a { color: var(--ink-soft); font-size: 0.9375rem; }
+.sitemap-columns a:hover { color: var(--wine); text-decoration: none; }
+
+/* ---------- footer ---------- */
+.site-footer { background: var(--navy); color: rgba(255, 255, 255, 0.76); margin-top: clamp(3rem, 6vw, 4.5rem); }
+.site-footer a { color: rgba(255, 255, 255, 0.9); }
+.site-footer a:hover { color: #fff; }
+.site-footer__inner { padding: clamp(2.25rem, 4vw, 3rem) 0 1.75rem; display: grid; gap: 1.25rem; }
+.site-footer h2 { color: #fff; font-size: 1.2rem; margin: 0; }
+.site-footer ul {
+  list-style: none; margin: 0; padding: 0;
+  display: flex; flex-wrap: wrap; gap: 0.6rem 1.5rem; font-size: 0.9375rem;
+}
+.site-footer__legal {
+  border-top: 1px solid rgba(255, 255, 255, 0.16);
+  padding: 1.1rem 0 1.75rem; font-size: 0.875rem; color: rgba(255, 255, 255, 0.58);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  *, *::before, *::after { transition-duration: 0.01ms !important; animation-duration: 0.01ms !important; }
+}

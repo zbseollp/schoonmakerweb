@@ -1,0 +1,42 @@
+---
+import BaseLayout from "../layouts/BaseLayout.astro";
+import { pageByPath, posts, magic, formatDate, isoDate, summarise } from "../lib/content";
+import { site } from "../data/site";
+
+const home = pageByPath("/");
+const recent = posts.slice(0, 6);
+const topMagic = magic.slice(0, 8);
+---
+<BaseLayout
+  title={home?.seoTitle || site.name}
+  description={home?.seoDescription || site.description}
+  canonical={site.domain + "/"}
+  image={home?.ogImage}
+>
+  <div class="page">
+    <div class="page__wrap prose" set:html={home?.content} />
+
+    <div class="wrap">
+      <div class="block-head"><h2>Vergelijkingen</h2><a href="/sitemap/">Alles bekijken</a></div>
+      <div class="card-grid">
+        {topMagic.map((m) => (
+          <article class="card">
+            <h3><a href={m.path}>{m.title}</a></h3>
+            <p>{summarise(m, 100)}</p>
+          </article>
+        ))}
+      </div>
+
+      <div class="block-head"><h2>Recente blogs</h2><a href="/blog/">Onze blogs</a></div>
+      <div class="archive">
+        {recent.map((post) => (
+          <article class="archive__item">
+            <h2><a href={post.path}>{post.title}</a></h2>
+            <p class="meta"><time datetime={isoDate(post.date)}>{formatDate(post.date)}</time></p>
+            <p>{summarise(post, 165)}</p>
+          </article>
+        ))}
+      </div>
+    </div>
+  </div>
+</BaseLayout>

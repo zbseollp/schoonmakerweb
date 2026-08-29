@@ -1,0 +1,17 @@
+{
+  "name": "schoonmakerweb",
+  "type": "module",
+  "version": "1.0.0",
+  "private": true,
+  "engines": { "node": ">=22.12.0" },
+  "scripts": {
+    "dev": "astro dev",
+    "build": "astro build",
+    "preview": "astro preview",
+    "deploy": "npm run build && npx wrangler deploy"
+  },
+  "dependencies": {
+    "@astrojs/sitemap": "^3.7.3",
+    "astro": "^5.18.2"
+  }
+}

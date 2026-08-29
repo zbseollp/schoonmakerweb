@@ -1,0 +1,34 @@
+---
+import BaseLayout from "../layouts/BaseLayout.astro";
+import { pageByPath, posts, formatDate, isoDate, summarise } from "../lib/content";
+import { site } from "../data/site";
+
+// /blog/ was op de oude site een Elementor-pagina met een eigen selectie, geen
+// gepagineerd archief; dat volledige archief staat op /category/blog/.
+const page = pageByPath("/blog/");
+const recent = posts.slice(0, 12);
+---
+<BaseLayout
+  title={page?.seoTitle || "Onze blogs" + site.titleSuffix}
+  description={page?.seoDescription || site.description}
+  canonical={site.domain + "/blog/"}
+>
+  <div class="page">
+    {page?.content && <div class="page__wrap prose" set:html={page.content} />}
+    <div class="wrap">
+      <div class="block-head">
+        <h2>Alle blogs</h2>
+        <a href="/category/blog/">Het volledige archief</a>
+      </div>
+      <div class="archive">
+        {recent.map((post) => (
+          <article class="archive__item">
+            <h2><a href={post.path}>{post.title}</a></h2>
+            <p class="meta"><time datetime={isoDate(post.date)}>{formatDate(post.date)}</time></p>
+            <p>{summarise(post, 165)}</p>
+          </article>
+        ))}
+      </div>
+    </div>
+  </div>
+</BaseLayout>

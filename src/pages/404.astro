@@ -1,0 +1,25 @@
+---
+import BaseLayout from "../layouts/BaseLayout.astro";
+import { posts, summarise } from "../lib/content";
+import { site } from "../data/site";
+---
+<BaseLayout title={"Pagina niet gevonden" + site.titleSuffix} noindex>
+  <div class="page">
+    <div class="page__wrap">
+      <h1>Pagina niet gevonden</h1>
+      <p>Deze pagina bestaat niet (meer). Bekijk <a href="/category/blog/">alle blogs</a>,
+         de <a href="/sitemap/">sitemap</a> of ga terug naar de <a href="/">homepage</a>.</p>
+    </div>
+    <div class="wrap">
+      <div class="block-head"><h2>Recente blogs</h2></div>
+      <div class="card-grid">
+        {posts.slice(0, 4).map((post) => (
+          <article class="card">
+            <h3><a href={post.path}>{post.title}</a></h3>
+            <p>{summarise(post, 100)}</p>
+          </article>
+        ))}
+      </div>
+    </div>
+  </div>
+</BaseLayout>

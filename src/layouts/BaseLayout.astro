@@ -1,0 +1,91 @@
+---
+import { site, nav } from "../data/site";
+import "../styles/site.css";
+
+interface Props {
+  title: string;
+  description?: string;
+  canonical?: string;
+  image?: string;
+  type?: string;
+  noindex?: boolean;
+}
+
+const {
+  title, description = site.description, canonical, image, type = "website", noindex = false,
+} = Astro.props;
+
+const canonicalUrl = canonical || new URL(Astro.url.pathname, site.domain).href;
+const ogImage = image ? new URL(image, site.domain).href : undefined;
+const path = Astro.url.pathname;
+---
+
+<!doctype html>
+<html lang="nl-NL">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>{title}</title>
+    {description && <meta name="description" content={description} />}
+    <link rel="canonical" href={canonicalUrl} />
+    {noindex && <meta name="robots" content="noindex, follow" />}
+
+    <meta property="og:type" content={type} />
+    <meta property="og:site_name" content={site.name} />
+    <meta property="og:title" content={title} />
+    {description && <meta property="og:description" content={description} />}
+    <meta property="og:url" content={canonicalUrl} />
+    {ogImage && <meta property="og:image" content={ogImage} />}
+    <meta property="og:locale" content="nl_NL" />
+    <meta name="twitter:card" content={ogImage ? "summary_large_image" : "summary"} />
+
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link
+      rel="stylesheet"
+      href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600&family=Inter:wght@400;500;600&display=swap"
+    />
+    <link rel="alternate" type="application/rss+xml" title={site.name} href="/feed.xml" />
+    <slot name="head" />
+  </head>
+  <body>
+    <a class="skip-link" href="#content">Ga naar de inhoud</a>
+
+    <header class="site-header">
+      <div class="wrap site-header__inner">
+        <a class="brand" href="/">{site.name}</a>
+        <nav class="site-nav" aria-label="Hoofdmenu">
+          <ul>
+            {nav.map((item) => (
+              <li>
+                <a href={item.href} aria-current={path === item.href ? "page" : undefined}>
+                  {item.label}
+                </a>
+              </li>
+            ))}
+          </ul>
+        </nav>
+      </div>
+    </header>
+
+    <main id="content">
+      <slot />
+    </main>
+
+    <footer class="site-footer">
+      <div class="wrap site-footer__inner">
+        <h2>{site.name}</h2>
+        <nav aria-label="Footermenu">
+          <ul>
+            {nav.map((item) => <li><a href={item.href}>{item.label}</a></li>)}
+            <li><a href="/category/blog/">Alle blogs</a></li>
+            <li><a href="/sitemap/">Sitemap</a></li>
+          </ul>
+        </nav>
+      </div>
+      <div class="wrap site-footer__legal">
+        © {new Date().getFullYear()} {site.name}. Alle rechten voorbehouden.
+      </div>
+    </footer>
+  </body>
+</html>
