@@ -217,7 +217,11 @@ for path in sitemap:
         "featuredImage": "",
     }
     rec.update(head_meta(path))
-    rec["featuredImage"] = rec.get("ogImage", "")
+    # De og:image is op alle 96 pagina's dezelfde site-brede fallback en het
+    # bestand bestaat niet eens meer. De eerste productfoto uit de pagina zelf
+    # is wel per pagina anders en laadt van dezelfde host als op de oude site.
+    first = re.search(r'<img[^>]+src="([^"]+)"', rec["content"])
+    rec["featuredImage"] = first.group(1) if first else ""
     magic.append(rec)
 
 posts.sort(key=lambda r: r["date"], reverse=True)

@@ -1,8 +1,10 @@
-# Deze worker draait in het Cloudflare-account van info@zb-marketing.com
-# (twilight-breeze-d943). Kiest wrangler het verkeerde account, zet dan
-# CLOUDFLARE_ACCOUNT_ID=aa20277e66394b81d65252fd5708e2c0 voor het commando.
+# Deze worker draait in het Cloudflare-account van info@zbseo.uk
+# (muddy-heart-fc18). Het account staat er expliciet in zodat een deploy niet
+# per ongeluk in het andere account belandt: dan slaagt hij wel, maar verandert
+# er niets aan het domein.
 name = "schoonmakerweb"
 main = "worker/index.js"
+account_id = "54b144d6836138e432688b9d5f4ec8aa"
 compatibility_date = "2025-01-01"
 compatibility_flags = ["nodejs_compat"]
 workers_dev = true

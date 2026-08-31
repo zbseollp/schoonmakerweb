@@ -1,0 +1,23 @@
+---
+import type { Entry } from "../lib/content";
+interface Props { item: Entry }
+const { item } = Astro.props;
+
+// De titels zijn allemaal "Beste 10 <product> op volgorde"; op een kaart is
+// het product zelf genoeg.
+const label = item.title
+  .replace(/^Beste\s*10\s*/i, "")
+  .replace(/\s*op volgorde\s*$/i, "")
+  .trim() || item.title;
+---
+<a class="compare-card" href={item.path}>
+  {item.featuredImage && (
+    <span class="compare-card__media">
+      <img src={item.featuredImage} alt="" loading="lazy" decoding="async" />
+    </span>
+  )}
+  <span class="compare-card__body">
+    <span class="compare-card__title">{label}</span>
+    <span class="compare-card__hint">Top 10 vergeleken</span>
+  </span>
+</a>

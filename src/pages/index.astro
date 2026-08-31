@@ -1,11 +1,25 @@
 ---
 import BaseLayout from "../layouts/BaseLayout.astro";
-import { pageByPath, posts, magic, formatDate, isoDate, summarise } from "../lib/content";
+import CompareCard from "../components/CompareCard.astro";
+import PostCard from "../components/PostCard.astro";
+import { pageByPath, posts, magic } from "../lib/content";
 import { site } from "../data/site";
+import { themes, themeFor } from "../data/themes";
 
+/**
+ * De oude voorpagina was een Elementor-pagina; wat daarvan overblijft zonder
+ * die opmaak is een reeks losse titels en "Lees meer"-links zonder verband.
+ * Deze pagina wordt daarom opgebouwd uit de inhoud zelf: de drie thema's die
+ * de site al had, de 96 vergelijkingen daaronder, en de recente blogs.
+ */
 const home = pageByPath("/");
+
+const byTheme = themes.map((theme) => ({
+  theme,
+  items: magic.filter((m) => themeFor(m.slug).slug === theme.slug),
+}));
+
 const recent = posts.slice(0, 6);
-const topMagic = magic.slice(0, 8);
 ---
 <BaseLayout
   title={home?.seoTitle || site.name}
@@ -13,30 +27,56 @@ const topMagic = magic.slice(0, 8);
   canonical={site.domain + "/"}
   image={home?.ogImage}
 >
-  <div class="page">
-    <div class="page__wrap prose" set:html={home?.content} />
-
-    <div class="wrap">
-      <div class="block-head"><h2>Vergelijkingen</h2><a href="/sitemap/">Alles bekijken</a></div>
-      <div class="card-grid">
-        {topMagic.map((m) => (
-          <article class="card">
-            <h3><a href={m.path}>{m.title}</a></h3>
-            <p>{summarise(m, 100)}</p>
-          </article>
-        ))}
-      </div>
-
-      <div class="block-head"><h2>Recente blogs</h2><a href="/blog/">Onze blogs</a></div>
-      <div class="archive">
-        {recent.map((post) => (
-          <article class="archive__item">
-            <h2><a href={post.path}>{post.title}</a></h2>
-            <p class="meta"><time datetime={isoDate(post.date)}>{formatDate(post.date)}</time></p>
-            <p>{summarise(post, 165)}</p>
-          </article>
-        ))}
-      </div>
+  <section class="hero">
+    <div class="wrap hero__inner">
+      <h1>Uw gids voor schoonmaakmiddelen</h1>
+      <p class="hero__lead">
+        We vergelijken {magic.length} soorten schoonmaak- en tuinapparatuur en
+        schrijven over alles wat daarbij komt kijken. Van stofzuiger tot
+        grasmaaier, met per product een top 10 op volgorde.
+      </p>
+      <p class="hero__actions">
+        <a class="button" href="#vergelijkingen">Bekijk de vergelijkingen</a>
+        <a class="button button--ghost" href="/category/blog/">Lees de blogs</a>
+      </p>
     </div>
-  </div>
+  </section>
+
+  <section class="section wrap">
+    <div class="theme-grid">
+      {byTheme.map(({ theme, items }) => (
+        <a class="theme-card" href={theme.path}>
+          <h2>{theme.name}</h2>
+          <p>{theme.blurb}</p>
+          <span class="theme-card__count">{items.length} vergelijkingen</span>
+        </a>
+      ))}
+    </div>
+  </section>
+
+  <section class="section section--alt" id="vergelijkingen">
+    <div class="wrap">
+      {byTheme.map(({ theme, items }) => (
+        <>
+          <div class="block-head">
+            <h2>{theme.name}</h2>
+            <a href={theme.path}>Alle {items.length} bekijken</a>
+          </div>
+          <div class="compare-grid">
+            {items.slice(0, 8).map((item) => <CompareCard item={item} />)}
+          </div>
+        </>
+      ))}
+    </div>
+  </section>
+
+  <section class="section wrap">
+    <div class="block-head">
+      <h2>Recente blogs</h2>
+      <a href="/category/blog/">Alle {posts.length} blogs</a>
+    </div>
+    <div class="post-grid">
+      {recent.map((post) => <PostCard post={post} />)}
+    </div>
+  </section>
 </BaseLayout>

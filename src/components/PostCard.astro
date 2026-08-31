@@ -1,0 +1,24 @@
+---
+import type { Entry } from "../lib/content";
+import { formatDate, isoDate, summarise } from "../lib/content";
+interface Props { post: Entry; showImage?: boolean }
+const { post, showImage = true } = Astro.props;
+---
+<article class="post-card">
+  {showImage && (
+    post.featuredImage ? (
+      <a class="post-card__media" href={post.path} tabindex="-1" aria-hidden="true">
+        <img src={post.featuredImage} alt="" loading="lazy" decoding="async" />
+      </a>
+    ) : (
+      /* Ruim de helft van de berichten heeft geen afbeelding; een rustig vlak
+         houdt het raster heel in plaats van dat er gaten in vallen. */
+      <a class="post-card__media post-card__media--blank" href={post.path} tabindex="-1" aria-hidden="true"></a>
+    )
+  )}
+  <div class="post-card__body">
+    <h3><a href={post.path}>{post.title}</a></h3>
+    <p>{summarise(post, 120)}</p>
+    <p class="meta"><time datetime={isoDate(post.date)}>{formatDate(post.date)}</time></p>
+  </div>
+</article>

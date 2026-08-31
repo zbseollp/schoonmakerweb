@@ -195,3 +195,108 @@ img { max-width: 100%; height: auto; display: block; }
 @media (prefers-reduced-motion: reduce) {
   *, *::before, *::after { transition-duration: 0.01ms !important; animation-duration: 0.01ms !important; }
 }
+
+/* ---------- voorpagina en themapagina's ---------- */
+.hero {
+  background:
+    radial-gradient(120% 140% at 12% 0%, var(--navy-tint) 0%, transparent 58%),
+    radial-gradient(90% 120% at 100% 0%, var(--wine-tint) 0%, transparent 55%),
+    var(--paper);
+  border-bottom: 1px solid var(--line);
+  padding: clamp(2.75rem, 6vw, 5rem) 0 clamp(2.25rem, 4.5vw, 3.5rem);
+}
+.hero__inner { max-width: 46rem; }
+.hero h1 { margin-bottom: 0.4em; }
+.hero__lead { font-size: clamp(1.0625rem, 1rem + 0.4vw, 1.1875rem); margin: 0 0 1.6rem; }
+.hero__actions { display: flex; flex-wrap: wrap; gap: 0.75rem; margin: 0; }
+
+.button {
+  display: inline-block; background: var(--wine); color: #fff;
+  padding: 0.65rem 1.3rem; border-radius: 8px;
+  font-family: var(--font-head); font-size: 0.9375rem; font-weight: 500;
+  transition: background-color 0.15s ease;
+}
+.button:hover { background: var(--wine-dark); color: #fff; text-decoration: none; }
+.button--ghost {
+  background: transparent; color: var(--navy);
+  box-shadow: inset 0 0 0 1px var(--line-strong);
+}
+.button--ghost:hover { background: var(--navy-tint); color: var(--navy-dark); }
+
+/* Drie thema's */
+.theme-grid { display: grid; gap: 1.25rem; grid-template-columns: repeat(auto-fit, minmax(260px, 1fr)); }
+.theme-card {
+  display: flex; flex-direction: column; gap: 0.35rem;
+  border: 1px solid var(--line); border-left: 4px solid var(--wine);
+  border-radius: var(--radius); padding: 1.25rem 1.4rem; background: var(--paper);
+  transition: border-color 0.15s ease, transform 0.15s ease, box-shadow 0.15s ease;
+}
+.theme-card:hover {
+  text-decoration: none; transform: translateY(-2px);
+  border-color: var(--line-strong); border-left-color: var(--wine-dark);
+  box-shadow: var(--shadow);
+}
+.theme-card h2 { font-size: 1.25rem; margin: 0; }
+.theme-card p { margin: 0; font-size: 0.9375rem; color: var(--ink-muted); }
+.theme-card__count {
+  margin-top: auto; padding-top: 0.6rem;
+  font-family: var(--font-head); font-size: 0.8125rem; font-weight: 500; color: var(--wine);
+}
+
+/* Vergelijkingen */
+.compare-grid {
+  display: grid; gap: 1rem;
+  grid-template-columns: repeat(auto-fill, minmax(190px, 1fr));
+  margin-bottom: 2.5rem;
+}
+.compare-card {
+  display: flex; flex-direction: column;
+  border: 1px solid var(--line); border-radius: var(--radius);
+  background: var(--paper); overflow: hidden;
+  transition: border-color 0.15s ease, transform 0.15s ease, box-shadow 0.15s ease;
+}
+.compare-card:hover {
+  text-decoration: none; transform: translateY(-2px);
+  border-color: var(--wine); box-shadow: var(--shadow);
+}
+.compare-card__media {
+  display: block; aspect-ratio: 4 / 3; background: var(--surface-alt);
+  padding: 0.9rem; display: grid; place-items: center;
+}
+.compare-card__media img { max-height: 100%; width: auto; object-fit: contain; }
+.compare-card__body {
+  display: flex; flex-direction: column; gap: 0.15rem;
+  padding: 0.85rem 1rem 1rem; border-top: 1px solid var(--line);
+}
+.compare-card__title {
+  font-family: var(--font-head); font-weight: 500; font-size: 0.9375rem;
+  color: var(--ink); line-height: 1.3;
+}
+.compare-card__hint { font-size: 0.8125rem; color: var(--wine); }
+
+/* Blogkaarten */
+.post-grid { display: grid; gap: 1.75rem; grid-template-columns: repeat(auto-fill, minmax(270px, 1fr)); }
+.post-card { display: flex; flex-direction: column; gap: 0.7rem; }
+.post-card__media {
+  display: block; aspect-ratio: 3 / 2; overflow: hidden;
+  border-radius: var(--radius); background: var(--surface-alt);
+}
+.post-card__media img {
+  width: 100%; height: 100%; object-fit: cover;
+  transition: transform 0.4s cubic-bezier(0.2, 0, 0.2, 1);
+}
+.post-card:hover .post-card__media img { transform: scale(1.035); }
+.post-card__body { display: flex; flex-direction: column; gap: 0.3rem; }
+.post-card h3 { font-size: 1.0625rem; line-height: 1.32; margin: 0; }
+.post-card h3 a { color: var(--ink); }
+.post-card h3 a:hover { color: var(--wine); text-decoration: none; }
+.post-card p { margin: 0; font-size: 0.9rem; color: var(--ink-muted); }
+.post-card .meta { margin: auto 0 0; padding-top: 0.2rem; }
+
+/* Blogkaart zonder foto: een rustig vlak met een accentstreep, zodat het
+   raster niet uit elkaar valt tussen wél en niet geïllustreerde berichten. */
+.post-card__media--blank { position: relative; background: var(--navy-tint); }
+.post-card__media--blank::after {
+  content: ""; position: absolute; left: 1.15rem; bottom: 1.15rem;
+  width: 2.25rem; height: 3px; background: var(--wine); border-radius: 2px;
+}

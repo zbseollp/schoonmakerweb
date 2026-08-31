@@ -1,9 +1,12 @@
 ---
 import BaseLayout from "../layouts/BaseLayout.astro";
+import CompareCard from "../components/CompareCard.astro";
+import PostCard from "../components/PostCard.astro";
 import {
-  detailEntries, posts, formatDate, isoDate, summarise, authorFor,
+  detailEntries, posts, magic, formatDate, isoDate, summarise, authorFor,
 } from "../lib/content";
 import { site } from "../data/site";
+import { themes, themeFor } from "../data/themes";
 
 export function getStaticPaths() {
   return detailEntries.map((entry) => ({ params: { slug: entry.slug }, props: { entry } }));
@@ -13,12 +16,23 @@ const { entry } = Astro.props;
 const author = authorFor(entry);
 const category = entry.categories[0];
 
-// Op een vergelijkingspagina staan tientallen productblokken; die krijgen wat
+/** De drie themapagina's krijgen hun vergelijkingen eronder; op de oude site
+ *  stond daar alleen een alinea en waren die pagina's nergens vindbaar. */
+const theme = themes.find((t) => t.path === entry.path);
+const themeItems = theme ? magic.filter((m) => themeFor(m.slug).slug === theme.slug) : [];
+
+// Een vergelijkingspagina heeft tientallen productblokken; die krijgen wat
 // meer lucht dan een gewoon artikel.
 const proseClass = entry.kind === "magic" ? "prose prose--compare" : "prose";
 
-const related =
-  entry.kind === "post" ? posts.filter((p) => p.slug !== entry.slug).slice(0, 4) : [];
+const sameTheme =
+  entry.kind === "magic"
+    ? magic
+        .filter((m) => m.slug !== entry.slug && themeFor(m.slug).slug === themeFor(entry.slug).slug)
+        .slice(0, 6)
+    : [];
+
+const related = entry.kind === "post" ? posts.filter((p) => p.slug !== entry.slug).slice(0, 3) : [];
 
 const schema =
   entry.kind === "post"
@@ -58,16 +72,35 @@ const schema =
       <div class={proseClass} set:html={entry.content} />
     </div>
 
+    {theme && themeItems.length > 0 && (
+      <div class="wrap">
+        <div class="block-head">
+          <h2>Vergelijkingen in {theme.name}</h2>
+          <span class="meta">{themeItems.length} stuks</span>
+        </div>
+        <div class="compare-grid">
+          {themeItems.map((item) => <CompareCard item={item} />)}
+        </div>
+      </div>
+    )}
+
+    {sameTheme.length > 0 && (
+      <div class="wrap">
+        <div class="block-head">
+          <h2>Meer uit {themeFor(entry.slug).name}</h2>
+          <a href={themeFor(entry.slug).path}>Alles bekijken</a>
+        </div>
+        <div class="compare-grid">
+          {sameTheme.map((item) => <CompareCard item={item} />)}
+        </div>
+      </div>
+    )}
+
     {related.length > 0 && (
       <div class="wrap">
         <div class="block-head"><h2>Meer blogs</h2><a href="/category/blog/">Alle blogs</a></div>
-        <div class="card-grid">
-          {related.map((post) => (
-            <article class="card">
-              <h3><a href={post.path}>{post.title}</a></h3>
-              <p>{summarise(post, 100)}</p>
-            </article>
-          ))}
+        <div class="post-grid">
+          {related.map((post) => <PostCard post={post} />)}
         </div>
       </div>
     )}
