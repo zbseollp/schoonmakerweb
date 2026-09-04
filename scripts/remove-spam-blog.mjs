@@ -157,8 +157,12 @@ function reasonFor(post) {
   }
 
   if (isCleaning(titleHay)) return null;
-  for (const re of OFF_TOPIC_TITLE) {
-    if (re.test(titleHay)) return `off-topic:${re}`;
+  // Off-topic gossip stays live by default so old articles keep showing.
+  // Pass --apply-offtopic to hide them again.
+  if (process.argv.includes('--apply-offtopic')) {
+    for (const re of OFF_TOPIC_TITLE) {
+      if (re.test(titleHay)) return `off-topic:${re}`;
+    }
   }
   return null;
 }
@@ -224,12 +228,16 @@ const posts = Array.isArray(data.posts) ? data.posts : [];
 const hits = [];
 let sanitized = 0;
 
-/** Sticky: never auto-unhide a slug that was previously flagged. */
-const previous = new Set();
+/** Sticky: keep previous HARD spam only (never sticky-hide restored offtopic). */
+const previousHard = new Set();
 if (existsSync(OUT)) {
   try {
     const raw = JSON.parse(readFileSync(OUT, 'utf8'));
-    for (const s of Array.isArray(raw) ? raw : raw.slugs || []) previous.add(String(s));
+    const details = Array.isArray(raw?.details) ? raw.details : [];
+    for (const d of details) {
+      const reason = String(d?.reason || '');
+      if (/^hard-|^sticky:previous-hard/i.test(reason)) previousHard.add(String(d.slug));
+    }
   } catch {
     /* ignore */
   }
@@ -238,7 +246,7 @@ if (existsSync(OUT)) {
 for (const p of posts) {
   if (!p?.slug) continue;
   let reason = reasonFor(p);
-  if (!reason && previous.has(p.slug)) reason = 'sticky:previous-spam';
+  if (!reason && previousHard.has(p.slug)) reason = 'sticky:previous-hard';
   if (reason) {
     hits.push({ slug: p.slug, reason, title: p.title });
     // Still scrub malware from stored HTML so a future un-hide is safe

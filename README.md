@@ -12,11 +12,11 @@ Koppel `schoonmakerweb.nl` / `www` alleen in het **Cloudflare-dashboard** aan
 deze Worker. Zet **geen** `routes` / `custom_domain` in `wrangler.toml` —
 dat breekt de Jenkins-deploy.
 
-Publish-gates zitten in `npm run build` (prepare → assert → astro build →
-assert `--dist` → guard-deploy). Spam/off-topic/malware posts blijven in
-`src/data/content.json` maar worden via `src/data/spam-slugs.json` verborgen;
-casino-affiliate links en scripts worden uit live bodies gestript. Malware
-images (Gameshub/poker) worden verwijderd in prepare.
+Publish-gates zitten in `npm run build` (prepare → merge Payload MD → assert →
+astro build → assert `--dist` → guard-deploy). Legacy posts live in
+`src/data/content.json`. Payload sync writes `src/content/blog/*.md`;
+`merge-payload-blog.mjs` merges them into `content.json` so CMS publishes
+come online. Hard casino/cloaked spam stays hidden via `spam-slugs.json`.
 
 **Do not bypass these gates.** Jenkins runs `npm run build` only. Removing
 `assert-publish-ready`, `guard-deploy`, or the floor files will fail the build

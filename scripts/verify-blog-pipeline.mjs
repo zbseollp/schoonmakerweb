@@ -73,6 +73,7 @@ for (const needed of [
 const prepare = String(pkg.scripts?.['prepare:blog'] || '');
 for (const needed of [
   'assert-blog-count.mjs',
+  'merge-payload-blog.mjs',
   'remove-spam-blog.mjs',
   'assert-content-clean.mjs',
   'assert-publish-ready.mjs',

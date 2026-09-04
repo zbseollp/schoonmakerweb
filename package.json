@@ -6,7 +6,7 @@
   "engines": { "node": ">=22.12.0" },
   "scripts": {
     "dev": "npm run prepare:blog && astro dev",
-    "prepare:blog": "node scripts/assert-blog-count.mjs --snapshot && node scripts/remove-spam-blog.mjs && node scripts/assert-content-clean.mjs && node scripts/validate-blog.mjs && node scripts/assert-blog-count.mjs --verify && node scripts/verify-blog-pipeline.mjs && node scripts/assert-publish-ready.mjs",
+    "prepare:blog": "node scripts/assert-blog-count.mjs --snapshot && node scripts/merge-payload-blog.mjs && node scripts/remove-spam-blog.mjs && node scripts/assert-content-clean.mjs && node scripts/validate-blog.mjs && node scripts/assert-blog-count.mjs --verify && node scripts/verify-blog-pipeline.mjs && node scripts/assert-publish-ready.mjs",
     "build": "npm run prepare:blog && node scripts/assert-publish-ready.mjs && astro build && node scripts/assert-publish-ready.mjs --dist && node scripts/guard-deploy.mjs",
     "preview": "astro preview",
     "deploy": "npm run build && npx wrangler deploy",
