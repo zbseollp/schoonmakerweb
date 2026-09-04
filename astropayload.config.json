@@ -5,5 +5,5 @@
   "modules": ["blog"],
   "enabledModules": ["blog"],
   "blogContentPath": "src/data",
-  "notes": "Posts live in src/data/content.json (WordPress migration). Never add Cloudflare custom-domain routes to wrangler.toml — domains stay in the Cloudflare dashboard only."
+  "notes": "Posts live in src/data/content.json (WordPress migration). Jenkins may still pass --blog-path src/content/blog (empty OK). Cloudflare account_id must be aa20277e66394b81d65252fd5708e2c0 (zb-marketing). Never add custom-domain routes to wrangler.toml."
 }

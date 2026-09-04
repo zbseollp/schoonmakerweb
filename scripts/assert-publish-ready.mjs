@@ -9,6 +9,8 @@ import { readFileSync, existsSync } from 'node:fs';
 import { join } from 'node:path';
 
 const EXPECTED_REPO = 'zbseollp/schoonmakerweb';
+/** Must match the Cloudflare account Jenkins CLOUDFLARE_API_TOKEN can deploy to. */
+const EXPECTED_CF_ACCOUNT = 'aa20277e66394b81d65252fd5708e2c0';
 const CONTENT = 'src/data/content.json';
 const SPAM_FILE = 'src/data/spam-slugs.json';
 const CONTENT_TS = 'src/lib/content.ts';
@@ -45,6 +47,24 @@ function assertNoWranglerRoutes() {
       );
       process.exit(1);
     }
+  }
+}
+
+function assertCloudflareAccount() {
+  if (!existsSync('wrangler.toml')) {
+    console.error('[assert-publish-ready] missing wrangler.toml');
+    process.exit(1);
+  }
+  const raw = readFileSync('wrangler.toml', 'utf8');
+  const m = raw.match(/^\s*account_id\s*=\s*["']([^"']+)["']/m);
+  const id = m?.[1]?.trim() || '';
+  if (id !== EXPECTED_CF_ACCOUNT) {
+    console.error(
+      `\n[assert-publish-ready] BUILD ABORTED — wrangler account_id is ${JSON.stringify(id) || '(missing)'}, ` +
+        `expected ${JSON.stringify(EXPECTED_CF_ACCOUNT)} (info@zb-marketing.com).\n` +
+        `Wrong account_id → Cloudflare Authentication error [code: 10000] on Jenkins deploy.\n`,
+    );
+    process.exit(1);
   }
 }
 
@@ -176,6 +196,7 @@ function assertDistHasPublishedPosts() {
 }
 
 assertNoWranglerRoutes();
+assertCloudflareAccount();
 assertGithubRepo();
 assertFloorPresent();
 assertContentPipeline();
