@@ -1,4 +1,5 @@
 import raw from "../data/content.json";
+import spamRaw from "../data/spam-slugs.json";
 import { authors } from "../data/site";
 
 export type Term = { slug: string; name: string };
@@ -26,7 +27,25 @@ const data = raw as {
   posts: Entry[]; pages: Entry[]; magic: Entry[]; categories: Term[]; tags: Term[];
 };
 
-export const posts: Entry[] = [...data.posts].sort((a, b) => b.date.localeCompare(a.date));
+/** CMS dates can be a few hours ahead of build time — keep ~48h slack. */
+const FUTURE_SLACK_MS = 48 * 60 * 60 * 1000;
+
+const spamList = Array.isArray(spamRaw)
+  ? spamRaw
+  : ((spamRaw as { slugs?: string[] }).slugs ?? []);
+const spamSlugs = new Set(spamList.map(String));
+
+function isLivePost(p: Entry): boolean {
+  if (!p?.slug || spamSlugs.has(p.slug)) return false;
+  if (!p.date) return true;
+  const t = Date.parse(p.date);
+  if (Number.isNaN(t)) return true;
+  return t <= Date.now() + FUTURE_SLACK_MS;
+}
+
+export const posts: Entry[] = [...data.posts]
+  .filter(isLivePost)
+  .sort((a, b) => b.date.localeCompare(a.date));
 export const magic: Entry[] = data.magic;
 export const categories: Term[] = data.categories;
 

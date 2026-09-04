@@ -8,16 +8,19 @@ Uitgerold op Cloudflare Workers in het account **info@zb-marketing.com**
 
 - https://schoonmakerweb.twilight-breeze-d943.workers.dev
 
-Het productiedomein hangt er nog niet aan: `schoonmakerweb.nl` staat nog op
-mijn.host-nameservers met de oude WordPress-site erachter. Zodra de
-nameservers naar Cloudflare zijn doorgezet:
+Koppel `schoonmakerweb.nl` / `www` alleen in het **Cloudflare-dashboard** aan
+deze Worker. Zet **geen** `routes` / `custom_domain` in `wrangler.toml` —
+dat breekt de Jenkins-deploy.
 
-```toml
-routes = [
-  { pattern = "schoonmakerweb.nl", custom_domain = true },
-  { pattern = "www.schoonmakerweb.nl", custom_domain = true },
-]
-```
+Publish-gates zitten in `npm run build` (prepare → assert → astro build →
+assert `--dist` → guard-deploy). Spam/off-topic/malware posts blijven in
+`src/data/content.json` maar worden via `src/data/spam-slugs.json` verborgen;
+casino-affiliate links en scripts worden uit live bodies gestript. Malware
+images (Gameshub/poker) worden verwijderd in prepare.
+
+**Do not bypass these gates.** Jenkins runs `npm run build` only. Removing
+`assert-publish-ready`, `guard-deploy`, or the floor files will fail the build
+on purpose so “articles do not come online” cannot return silently.
 
 ## Commando's
 

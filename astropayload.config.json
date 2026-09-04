@@ -1,0 +1,9 @@
+{
+  "version": 1,
+  "tenantSlug": "schoonmakerweb",
+  "githubRepo": "zbseollp/schoonmakerweb",
+  "modules": ["blog"],
+  "enabledModules": ["blog"],
+  "blogContentPath": "src/data",
+  "notes": "Posts live in src/data/content.json (WordPress migration). Never add Cloudflare custom-domain routes to wrangler.toml — domains stay in the Cloudflare dashboard only."
+}
