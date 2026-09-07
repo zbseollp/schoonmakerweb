@@ -63,6 +63,7 @@ for (const needed of [
   'prepare:blog',
   'assert-publish-ready.mjs',
   'assert-publish-ready.mjs --dist',
+  'verify-blog-routes.mjs',
   'guard-deploy.mjs',
 ]) {
   if (!build.includes(needed)) {
@@ -73,6 +74,7 @@ for (const needed of [
 const prepare = String(pkg.scripts?.['prepare:blog'] || '');
 for (const needed of [
   'assert-blog-count.mjs',
+  'restore-blog-md-from-git.mjs',
   'merge-payload-blog.mjs',
   'remove-spam-blog.mjs',
   'assert-content-clean.mjs',
@@ -81,6 +83,10 @@ for (const needed of [
   if (!prepare.includes(needed)) {
     fail(`package.json prepare:blog must include "${needed}"`);
   }
+}
+
+if (!String(pkg.scripts?.['export:blog-md'] || '').includes('export-content-json-to-blog-md')) {
+  fail('package.json must keep export:blog-md so content.json can refill Payload markdown');
 }
 
 console.log(

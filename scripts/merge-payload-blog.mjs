@@ -54,8 +54,10 @@ function mdToHtml(md) {
 function isDraft(data) {
   const d = String(data.draft ?? '').toLowerCase();
   if (d === 'true' || d === '1' || d === 'yes' || d === 'draft') return true;
-  const status = String(data.publishStatus ?? data._status ?? 'published').toLowerCase();
-  return Boolean(status && status !== 'published' && status !== 'publish');
+  const status = String(data.publishStatus ?? data._status ?? '').toLowerCase();
+  // Empty status = treat as published (Payload sync often omits the field).
+  if (!status) return false;
+  return status !== 'published' && status !== 'publish';
 }
 
 function toEntry(slug, data, body) {
@@ -119,12 +121,24 @@ for (const file of files) {
   const entry = toEntry(slug, fm, body);
   const prev = bySlug.get(slug);
   if (prev) {
-    // Payload wins title/body/date; keep WP categories if Payload omitted them
+    const payloadText = String(entry.content || '')
+      .replace(/<[^>]+>/g, ' ')
+      .replace(/\s+/g, ' ')
+      .trim();
+    const payloadHasBody = payloadText.length > 40;
     bySlug.set(slug, {
       ...prev,
       ...entry,
-      categories: prev.categories?.length ? prev.categories : entry.categories,
-      author: prev.author,
+      // Never gut a full WP article with an empty/stub CMS body.
+      content: payloadHasBody ? entry.content : prev.content,
+      excerpt: entry.excerpt || prev.excerpt,
+      featuredImage: entry.featuredImage || prev.featuredImage,
+      ogImage: entry.ogImage || prev.ogImage,
+      seoTitle: entry.seoTitle || prev.seoTitle,
+      seoDescription: entry.seoDescription || prev.seoDescription,
+      categories: entry.categories?.length ? entry.categories : prev.categories,
+      author: prev.author ?? entry.author,
+      modified: entry.modified || prev.modified || entry.date || prev.date,
     });
   } else {
     bySlug.set(slug, entry);

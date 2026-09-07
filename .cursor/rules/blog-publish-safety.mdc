@@ -1,0 +1,31 @@
+---
+description: schoonmakerweb blog publish safety — content.json + Payload md never diverge emptily
+globs: scripts/**/*,src/data/content.json,src/content/blog/**/*,astropayload.config.json,package.json,src/lib/content.ts
+alwaysApply: false
+---
+
+# schoonmakerweb blog safety
+
+## Never repeat this failure mode
+
+1. Live site reads **`src/data/content.json`** (WP catalog).
+2. Payload Admin import reads only **`src/content/blog/*.md`**.
+3. When `blog/` was empty, CMS looked empty while schoonmakerweb.nl still had articles.
+4. New Payload-only posts only go live after sync → **`merge-payload-blog`** → deploy.
+
+## Hard rules
+
+1. Keep **`prepare:blog`**: snapshot → restore-blog-md-from-git → merge-payload → spam hide → validate → floors → assert.
+2. Keep **`githubRepo`**: `zbseollp/schoonmakerweb` in `astropayload.config.json` and Tenant Admin.
+3. Never delete posts from `content.json` for “spam” — only hide via `spam-slugs.json`.
+4. Never soft-warn below `.blog-count-floor` (180) / `.blog-published-floor` (162).
+5. Keep canaries in `scripts/blog-canaries.txt` (≥5) and post-build `verify-blog-routes`.
+6. After changing `content.json`, run `npm run export:blog-md` and commit the markdown so Payload can re-import.
+7. Never add Cloudflare custom-domain `routes` in wrangler.
+8. Sort listings by newest of `date` / `modified` (48h future slack stays in `content.ts`).
+
+## If Payload looks empty
+
+1. Filter by tenant **schoonmakerweb**.
+2. Force **Import blog** (auto-import skips when any CMS posts already exist).
+3. Publish / redeploy so merge brings CMS-only posts into `content.json`.

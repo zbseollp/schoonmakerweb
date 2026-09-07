@@ -43,9 +43,16 @@ function isLivePost(p: Entry): boolean {
   return t <= Date.now() + FUTURE_SLACK_MS;
 }
 
+function activityStamp(p: Entry): string {
+  const a = p.modified || "";
+  const b = p.date || "";
+  return a > b ? a : b;
+}
+
 export const posts: Entry[] = [...data.posts]
   .filter(isLivePost)
-  .sort((a, b) => b.date.localeCompare(a.date));
+  // Newest upload OR latest update first (modified wins when newer than date).
+  .sort((a, b) => activityStamp(b).localeCompare(activityStamp(a)));
 export const magic: Entry[] = data.magic;
 export const categories: Term[] = data.categories;
 

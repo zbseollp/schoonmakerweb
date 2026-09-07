@@ -5,5 +5,5 @@
   "modules": ["blog"],
   "enabledModules": ["blog"],
   "blogContentPath": "src/content/blog",
-  "notes": "Legacy WP posts live in src/data/content.json. Payload sync writes src/content/blog/*.md; prepare:blog merge-payload-blog.mjs merges them into content.json so CMS publishes come online. Cloudflare account_id must be aa20277e66394b81d65252fd5708e2c0. Never add custom-domain routes to wrangler.toml."
+  "notes": "Legacy WP posts live in src/data/content.json (live site source of truth). Keep src/content/blog/*.md exported via npm run export:blog-md so Payload Import is never empty. Jenkins sync --clean → restore-blog-md-from-git → merge-payload-blog merges CMS posts into content.json. Cloudflare account_id must be aa20277e66394b81d65252fd5708e2c0. Never add custom-domain routes to wrangler.toml."
 }

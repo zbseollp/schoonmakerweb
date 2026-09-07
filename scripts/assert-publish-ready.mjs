@@ -5,8 +5,9 @@
  *   node scripts/assert-publish-ready.mjs
  *   node scripts/assert-publish-ready.mjs --dist
  */
-import { readFileSync, existsSync } from 'node:fs';
+import { readFileSync, existsSync, readdirSync } from 'node:fs';
 import { join } from 'node:path';
+import { execFileSync } from 'node:child_process';
 
 const EXPECTED_REPO = 'zbseollp/schoonmakerweb';
 /** Must match the Cloudflare account Jenkins CLOUDFLARE_API_TOKEN can deploy to. */
@@ -16,8 +17,17 @@ const SPAM_FILE = 'src/data/spam-slugs.json';
 const CONTENT_TS = 'src/lib/content.ts';
 const FLOOR_FILE = '.blog-count-floor';
 const PUBLISHED_FLOOR_FILE = '.blog-published-floor';
+const CANARY_FILE = 'scripts/blog-canaries.txt';
 const FUTURE_SLACK_MS = 48 * 60 * 60 * 1000;
 const distMode = process.argv.includes('--dist');
+
+function readCanaries() {
+  if (!existsSync(CANARY_FILE)) return [];
+  return readFileSync(CANARY_FILE, 'utf8')
+    .split(/\r?\n/)
+    .map((l) => l.trim())
+    .filter((l) => l && !l.startsWith('#'));
+}
 
 function readJson(path) {
   return JSON.parse(readFileSync(path, 'utf8'));
@@ -81,6 +91,63 @@ function assertGithubRepo() {
         `Also set the same value on the Tenant in Payload Admin.\n`,
     );
     process.exit(1);
+  }
+}
+
+/**
+ * Payload Import / restore-from-git only work when markdown is in git.
+ * Empty blog/ in the remote is how Admin looked empty while live still had posts.
+ */
+function assertBlogMarkdownInGit() {
+  const onDisk = existsSync('src/content/blog')
+    ? readdirSync('src/content/blog').filter((f) => /\.(md|mdx)$/i.test(f)).length
+    : 0;
+
+  let tracked = 0;
+  try {
+    const out = execFileSync('git', ['ls-files', '-z', 'src/content/blog'], {
+      encoding: 'utf8',
+      stdio: ['ignore', 'pipe', 'pipe'],
+    });
+    tracked = out
+      .split('\0')
+      .filter(Boolean)
+      .filter((f) => /\.(md|mdx)$/i.test(f)).length;
+  } catch {
+    tracked = 0;
+  }
+
+  const inCi = Boolean(process.env.JENKINS_URL || process.env.CI || process.env.GITHUB_ACTIONS);
+  const minMd = 50;
+
+  if (inCi && tracked < minMd) {
+    console.error(
+      `\n[assert-publish-ready] BUILD ABORTED — only ${tracked} git-tracked blog .md file(s) ` +
+        `(need >= ${minMd}).\n` +
+        `Run npm run export:blog-md, commit+push src/content/blog/*.md, then Import blog in Payload.\n` +
+        `Without this, Payload Admin stays empty while content.json still powers the live site.\n`,
+    );
+    process.exit(1);
+  }
+
+  if (!inCi && tracked < minMd && onDisk < minMd) {
+    console.error(
+      `\n[assert-publish-ready] BUILD ABORTED — blog markdown catalog missing ` +
+        `(git=${tracked}, disk=${onDisk}, need >= ${minMd}).\n` +
+        `Run: npm run export:blog-md\n`,
+    );
+    process.exit(1);
+  }
+
+  if (!inCi && tracked < minMd) {
+    console.warn(
+      `[assert-publish-ready] WARN — ${tracked} blog .md tracked in git (disk ${onDisk}). ` +
+        `Commit+push the export before Jenkins / Payload Import or CMS will look empty.`,
+    );
+  } else {
+    console.log(
+      `[assert-publish-ready] blog markdown catalog: git=${tracked}, disk=${onDisk}`,
+    );
   }
 }
 
@@ -158,7 +225,38 @@ function assertPublishedFloor() {
     );
     process.exit(1);
   }
-  console.log(`[assert-publish-ready] ${live.length} live post(s)` + (floor ? ` (floor ${floor})` : ''));
+
+  if (!existsSync(CANARY_FILE)) {
+    console.error(
+      `\n[assert-publish-ready] BUILD ABORTED — missing ${CANARY_FILE}.\n` +
+        `Canaries are required so key articles cannot silently 404.\n`,
+    );
+    process.exit(1);
+  }
+
+  const liveSlugs = new Set(live.map((p) => p.slug));
+  const canaries = readCanaries();
+  if (canaries.length < 5) {
+    console.error(
+      `\n[assert-publish-ready] BUILD ABORTED — ${CANARY_FILE} needs >= 5 slugs (got ${canaries.length}).\n`,
+    );
+    process.exit(1);
+  }
+  const missing = canaries.filter((slug) => !liveSlugs.has(slug));
+  if (missing.length) {
+    console.error(
+      `\n[assert-publish-ready] BUILD ABORTED — canary post(s) not live:\n` +
+        missing.map((s) => `  · /${s}/`).join('\n') +
+        `\n`,
+    );
+    process.exit(1);
+  }
+
+  console.log(
+    `[assert-publish-ready] ${live.length} live post(s)` +
+      (floor ? ` (floor ${floor})` : '') +
+      `, ${canaries.length} canaries OK`,
+  );
 }
 
 function assertDistHasPublishedPosts() {
@@ -198,6 +296,7 @@ function assertDistHasPublishedPosts() {
 assertNoWranglerRoutes();
 assertCloudflareAccount();
 assertGithubRepo();
+assertBlogMarkdownInGit();
 assertFloorPresent();
 assertContentPipeline();
 assertPublishedFloor();

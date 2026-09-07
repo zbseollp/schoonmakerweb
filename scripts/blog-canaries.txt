@@ -1,0 +1,7 @@
+# Slugs that must stay live after sync/merge (one per line).
+# Newest editorial posts — also the ones clients often create only in Payload.
+wat-zijn-de-beste-werkschoenen-voor-schoonmakers
+een-huis-dat-zichzelf-bijna-schoonhoudt-de-rol-van-vloer-en-kastruimte
+meer-sfeer-creeren-met-warme-tinten-in-je-interieur
+zonnescherm-overkapping-schaduw-en-stijl-voor-je-terras
+schoonmaakmiddelen-efficient-en-hygienisch-schoonmaken
