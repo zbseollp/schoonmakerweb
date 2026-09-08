@@ -5,7 +5,6 @@
 # Domains stay in the Cloudflare dashboard; never add custom-domain routes here.
 name = "schoonmakerweb"
 main = "worker/index.js"
-account_id = "aa20277e66394b81d65252fd5708e2c0"
 compatibility_date = "2025-01-01"
 compatibility_flags = ["nodejs_compat"]
 workers_dev = true
