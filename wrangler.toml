@@ -1,7 +1,5 @@
-# Deze worker draait in het Cloudflare-account van info@zb-marketing.com
-# (twilight-breeze-d943, account aa20277e…). Jenkins CLOUDFLARE_API_TOKEN
-# authenticates to that account only — do NOT point account_id at another
-# Cloudflare account (that causes Authentication error [code: 10000]).
+# Het Cloudflare-account is op de Tenant in Payload ingesteld — zet hier geen
+# account_id vast; de deploy haalt het account uit de Payload-configuratie.
 # Domains stay in the Cloudflare dashboard; never add custom-domain routes here.
 name = "schoonmakerweb"
 main = "worker/index.js"

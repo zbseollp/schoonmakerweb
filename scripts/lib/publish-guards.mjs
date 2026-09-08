@@ -10,7 +10,6 @@
 
 export const EXPECTED_TENANT = 'schoonmakerweb';
 export const EXPECTED_GITHUB_REPO = 'zbseollp/schoonmakerweb';
-export const EXPECTED_CF_ACCOUNT = 'aa20277e66394b81d65252fd5708e2c0';
 export const FUTURE_SLACK_MS = 48 * 60 * 60 * 1000;
 export const MIN_CANARY_COUNT = 5;
 export const DEFAULT_COUNT_FLOOR = 180;

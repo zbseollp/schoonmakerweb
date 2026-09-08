@@ -3,8 +3,8 @@
 Astro 5 statische site voor **schoonmakerweb.nl**, 1-op-1 overgezet vanaf
 WordPress.
 
-Uitgerold op Cloudflare Workers in het account **info@zb-marketing.com**
-(`aa20277e...`, subdomein `twilight-breeze-d943`):
+Uitgerold op Cloudflare Workers. Het account staat ingesteld op de Tenant in
+Payload; `wrangler.toml` legt geen `account_id` vast.
 
 - https://schoonmakerweb.twilight-breeze-d943.workers.dev
 
