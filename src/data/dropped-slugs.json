@@ -13,6 +13,10 @@
     {
       "slug": "hoe-hardwerkende-dienstverleners-ontspanning-vinden-in-digitaal-vermaak-na-een-lange-dienst",
       "reason": "256 characters of text left out of 4125 — nothing publishable survived sanitising"
+    },
+    {
+      "slug": "daniel",
+      "reason": "test post — title \"daniel\", body \"oke\", 3 characters of text; never existed in Payload, only in the repo"
     }
   ]
 }

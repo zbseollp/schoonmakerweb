@@ -1,9 +1,10 @@
 {
   "version": 1,
   "note": "Hidden at build time — posts stay in content.json. Do not delete.",
-  "generatedAt": "2026-09-09T08:38:22.032Z",
+  "generatedAt": "2026-09-09T08:46:40.169Z",
   "slugs": [
     "5-essentiele-stappen-om-te-nemen-voor-je-eerste-ervaring-met-online-casinos",
+    "daniel",
     "hoe-hardwerkende-dienstverleners-ontspanning-vinden-in-digitaal-vermaak-na-een-lange-dienst",
     "online-casinos-zoals-netflix-waarom-mensen-niet-zozeer-geinteresseerd-zijn-in-winnen-maar-in-het-verhaal"
   ],
@@ -12,6 +13,11 @@
       "slug": "5-essentiele-stappen-om-te-nemen-voor-je-eerste-ervaring-met-online-casinos",
       "reason": "editorial:56 characters of text left — the article was almost entirely injected casino promo, and sanitising it left a bare heading",
       "title": "5 Essentiële Stappen om te Nemen vóór je Eerste Ervaring met Online Casino’s"
+    },
+    {
+      "slug": "daniel",
+      "reason": "editorial:test post — title \"daniel\", body \"oke\", 3 characters of text; never existed in Payload, only in the repo",
+      "title": "daniel"
     },
     {
       "slug": "hoe-hardwerkende-dienstverleners-ontspanning-vinden-in-digitaal-vermaak-na-een-lange-dienst",
