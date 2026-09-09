@@ -47,12 +47,36 @@ function spamSlugSet() {
   return new Set(list.map(String));
 }
 
+const DROPPED_FILE = 'src/data/dropped-slugs.json';
+
+/** Slugs a human deliberately took down, from dropped-slugs.json. */
+function editorialDropSet() {
+  if (!existsSync(DROPPED_FILE)) return new Set();
+  try {
+    const raw = JSON.parse(readFileSync(DROPPED_FILE, 'utf8'));
+    const list = Array.isArray(raw) ? raw : raw.slugs || [];
+    return new Set(list.map((e) => String(typeof e === 'string' ? e : e.slug)));
+  } catch {
+    return new Set();
+  }
+}
+
 /**
- * Intentional spam takedown: slug listed in spam-slugs.json while still in content.json.
+ * Intentional takedown, in one of two shapes.
+ *
+ * Auto-detected spam is only intentional while the post is still in
+ * content.json — that is what separates "hidden on purpose" from "the content
+ * went missing", which is the loss this guard exists to catch.
+ *
+ * An editorial drop states the intent outright, so it does not need that
+ * evidence. A post that only ever lived in Payload is never in content.json
+ * once it is unpublished, and requiring it there made the guard block the very
+ * takedown the drop list had just authorised.
  */
 function isIntentionalSpamDrop(urlPath) {
   const slug = urlPath.replace(/^\/+|\/+$/g, '').split('/').pop();
   if (!slug) return false;
+  if (editorialDropSet().has(slug)) return true;
   if (!spamSlugSet().has(slug)) return false;
   if (!existsSync(CONTENT)) return true;
   try {
