@@ -12,4 +12,6 @@ directory = "./dist"
 binding = "ASSETS"
 html_handling = "force-trailing-slash"
 not_found_handling = "404-page"
-run_worker_first = ["/sitemap*.xml", "/sitemap.xml", "/sitemap_index.xml", "/feed", "/feed/"]
+# Zonder dit pad serveert de assets-binding meteen de 404-pagina en wordt de
+# Worker nooit aangeroepen — dan blijven de 301's uit worker/redirects.mjs dood.
+run_worker_first = ["/sitemap*.xml", "/sitemap.xml", "/sitemap_index.xml", "/feed", "/feed/", "/category", "/category/*"]

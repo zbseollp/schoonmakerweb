@@ -37,6 +37,39 @@ function readFloor(path) {
   return Number.isFinite(n) && n > 0 ? n : null;
 }
 
+/**
+ * The Worker only sees a request when run_worker_first covers its path.
+ * Leave /category out of it and the assets binding answers first with the 404
+ * page, so every redirect in worker/redirects.mjs is dead on arrival — the
+ * deploy succeeds and the old URLs 404 anyway. Caught exactly that way once.
+ */
+function assertRedirectPathsReachWorker() {
+  const file = ['wrangler.toml', 'wrangler.json', 'wrangler.jsonc'].find((f) => existsSync(f));
+  if (!file) return;
+  const raw = readFileSync(file, 'utf8');
+  const line = raw.match(/run_worker_first[^\]]*\]/s);
+  if (!line) {
+    console.error(
+      `
+[assert-publish-ready] BUILD ABORTED — ${file} has no run_worker_first.
+` +
+        `worker/redirects.mjs needs /category to reach the Worker.
+`,
+    );
+    process.exit(1);
+  }
+  if (!/["']\/category/.test(line[0])) {
+    console.error(
+      `
+[assert-publish-ready] BUILD ABORTED — run_worker_first in ${file} does not cover /category.
+` +
+        `The assets binding would answer first and the /category redirects would 404.
+`,
+    );
+    process.exit(1);
+  }
+}
+
 function assertNoWranglerRoutes() {
   for (const file of ['wrangler.toml', 'wrangler.json', 'wrangler.jsonc'].filter((f) => existsSync(f))) {
     const raw = readFileSync(file, 'utf8');
@@ -290,6 +323,7 @@ function assertDistHasPublishedPosts() {
 }
 
 assertNoWranglerRoutes();
+assertRedirectPathsReachWorker();
 assertGithubRepo();
 assertBlogMarkdownInGit();
 assertFloorPresent();
