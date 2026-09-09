@@ -1,12 +1,13 @@
 {
   "version": 1,
   "note": "Hidden at build time — posts stay in content.json. Do not delete.",
-  "generatedAt": "2026-09-09T08:46:40.169Z",
+  "generatedAt": "2026-09-09T08:51:00.758Z",
   "slugs": [
     "5-essentiele-stappen-om-te-nemen-voor-je-eerste-ervaring-met-online-casinos",
     "daniel",
     "hoe-hardwerkende-dienstverleners-ontspanning-vinden-in-digitaal-vermaak-na-een-lange-dienst",
-    "online-casinos-zoals-netflix-waarom-mensen-niet-zozeer-geinteresseerd-zijn-in-winnen-maar-in-het-verhaal"
+    "online-casinos-zoals-netflix-waarom-mensen-niet-zozeer-geinteresseerd-zijn-in-winnen-maar-in-het-verhaal",
+    "stralen-en-ontspannen-een-glanzend-huis-combineren-met-leuke-vrije-tijd"
   ],
   "details": [
     {
@@ -28,6 +29,11 @@
       "slug": "online-casinos-zoals-netflix-waarom-mensen-niet-zozeer-geinteresseerd-zijn-in-winnen-maar-in-het-verhaal",
       "reason": "editorial:206 characters of text left out of 14048 — nothing publishable survived sanitising",
       "title": "Online casino’s zoals Netflix: waarom mensen niet zozeer geïnteresseerd zijn in winnen, maar in het ‘verhaal’"
+    },
+    {
+      "slug": "stralen-en-ontspannen-een-glanzend-huis-combineren-met-leuke-vrije-tijd",
+      "reason": "editorial:129 characters of text left out of 4941 — sanitising took the casino injection and the article with it; what remains is headings",
+      "title": "Stralen en Ontspannen: Een Glanzend Huis Combineren met Leuke Vrije Tijd"
     }
   ]
 }

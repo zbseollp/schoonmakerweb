@@ -17,6 +17,10 @@
     {
       "slug": "daniel",
       "reason": "test post — title \"daniel\", body \"oke\", 3 characters of text; never existed in Payload, only in the repo"
+    },
+    {
+      "slug": "stralen-en-ontspannen-een-glanzend-huis-combineren-met-leuke-vrije-tijd",
+      "reason": "129 characters of text left out of 4941 — sanitising took the casino injection and the article with it; what remains is headings"
     }
   ]
 }
