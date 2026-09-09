@@ -14,7 +14,10 @@ const recent = posts.slice(0, 12);
   canonical={site.domain + "/blog/"}
 >
   <div class="page">
-    {page?.content && <div class="page__wrap prose" set:html={page.content} />}
+    <div class="page__wrap">
+      <h1 class="page__title">{page?.title || "Onze blogs"}</h1>
+      {page?.content && <div class="prose" set:html={page.content} />}
+    </div>
     <div class="wrap">
       <div class="block-head">
         <h2>Alle blogs</h2>

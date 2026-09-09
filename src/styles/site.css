@@ -100,6 +100,8 @@ img { max-width: 100%; height: auto; display: block; }
 
 .prose { font-size: 1.09375rem; line-height: 1.76; }
 .prose > h1:first-child { margin-top: 0; }
+.page__title { margin-top: 0; margin-bottom: 0.5em; }
+.page__title + .meta { margin-top: -0.25em; }
 .prose h2 { margin: 2.4rem 0 0.6rem; padding-top: 1.5rem; border-top: 1px solid var(--line); }
 .prose h3 { margin: 1.8rem 0 0.5rem; }
 .prose p { margin: 0 0 1.2rem; }

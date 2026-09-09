@@ -21,6 +21,10 @@ const category = entry.categories[0];
 const theme = themes.find((t) => t.path === entry.path);
 const themeItems = theme ? magic.filter((m) => themeFor(m.slug).slug === theme.slug) : [];
 
+/** De Elementor-snapshots dragen hun eigen <h1> in de body; alles wat uit
+ *  Payload komt niet, en die pagina's stonden dus zonder koptekst online. */
+const hasOwnH1 = /<h1[\s>]/i.test(entry.content || "");
+
 // Een vergelijkingspagina heeft tientallen productblokken; die krijgen wat
 // meer lucht dan een gewoon artikel.
 const proseClass = entry.kind === "magic" ? "prose prose--compare" : "prose";
@@ -62,6 +66,7 @@ const schema =
 
   <article class="page">
     <div class="page__wrap">
+      {!hasOwnH1 && <h1 class="page__title">{entry.title}</h1>}
       {entry.kind === "post" && (
         <p class="meta">
           {category && <a href={`/category/${category.slug}/`}>{category.name}</a>}
