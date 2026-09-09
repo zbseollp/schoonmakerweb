@@ -175,6 +175,38 @@ const META_SENTENCE = new RegExp(
   'gi',
 );
 
+/**
+ * MALWARE_ASSETS are deleted below, but the posts that used them keep pointing
+ * at the path — a 404 hero and a 404 og:image on an otherwise fine article.
+ * Clear the reference so the layout falls back to its default.
+ */
+function dropMalwareAssets(post) {
+  let changed = false;
+  const basenames = MALWARE_ASSETS.map((p) => p.split('/').pop());
+  const hits = (v) => basenames.some((b) => String(v || '').includes(b));
+
+  for (const field of ['featuredImage', 'ogImage']) {
+    if (hits(post[field])) {
+      post[field] = '';
+      changed = true;
+    }
+  }
+
+  if (hits(post.content)) {
+    const before = String(post.content);
+    // A <figure> names the file only in the <img> inside it, so a pattern
+    // anchored at "<figure" with [^>]* never gets past the first ">".
+    // Take whole blocks instead and decide per block.
+    const drop = (html, re) => html.replace(re, (block) => (hits(block) ? '' : block));
+    let out = drop(before, /<figure\b[\s\S]*?<\/figure>/gi);
+    out = drop(out, /<img\b[^>]*>/gi);
+    post.content = out;
+    if (out !== before) changed = true;
+  }
+
+  return changed;
+}
+
 function sanitizeMeta(post) {
   let changed = false;
   const fallback = String(post.content || '')
@@ -269,7 +301,8 @@ for (const p of posts) {
   const { html, changed } = sanitizeContent(p.content);
   if (changed) p.content = html;
   const metaChanged = sanitizeMeta(p);
-  if (changed || metaChanged) sanitized += 1;
+  const assetChanged = dropMalwareAssets(p);
+  if (changed || metaChanged || assetChanged) sanitized += 1;
 
   const reason = reasonFor(p);
   if (reason) {
