@@ -69,7 +69,7 @@ const schema =
       {!hasOwnH1 && <h1 class="page__title">{entry.title}</h1>}
       {entry.kind === "post" && (
         <p class="meta">
-          {category && <a href={`/category/${category.slug}/`}>{category.name}</a>}
+          {category && <a href="/blog/">{category.name}</a>}
           {author && <a href={`/author/${author.slug}/`}>{author.name}</a>}
           <time datetime={isoDate(entry.date)}>{formatDate(entry.date)}</time>
         </p>
@@ -103,7 +103,7 @@ const schema =
 
     {related.length > 0 && (
       <div class="wrap">
-        <div class="block-head"><h2>Meer blogs</h2><a href="/category/blog/">Alle blogs</a></div>
+        <div class="block-head"><h2>Meer blogs</h2><a href="/blog/">Alle blogs</a></div>
         <div class="post-grid">
           {related.map((post) => <PostCard post={post} />)}
         </div>

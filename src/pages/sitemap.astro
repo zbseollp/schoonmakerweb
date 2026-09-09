@@ -26,7 +26,7 @@ const page = pageByPath("/sitemap/");
           <h2>Categorieën</h2>
           <ul>
             {categories.map((c) => (
-              <li><a href={`/category/${c.slug}/`}>{c.name}</a> ({postsInCategory(c.slug).length})</li>
+              <li><a href="/blog/">{c.name}</a> ({postsInCategory(c.slug).length})</li>
             ))}
           </ul>
           <h2 style="margin-top:1.5rem">Auteurs</h2>

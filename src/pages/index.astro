@@ -37,7 +37,7 @@ const recent = posts.slice(0, 6);
       </p>
       <p class="hero__actions">
         <a class="button" href="#vergelijkingen">Bekijk de vergelijkingen</a>
-        <a class="button button--ghost" href="/category/blog/">Lees de blogs</a>
+        <a class="button button--ghost" href="/blog/">Lees de blogs</a>
       </p>
     </div>
   </section>
@@ -73,7 +73,7 @@ const recent = posts.slice(0, 6);
   <section class="section wrap">
     <div class="block-head">
       <h2>Recente blogs</h2>
-      <a href="/category/blog/">Alle {posts.length} blogs</a>
+      <a href="/blog/">Alle {posts.length} blogs</a>
     </div>
     <div class="post-grid">
       {recent.map((post) => <PostCard post={post} />)}

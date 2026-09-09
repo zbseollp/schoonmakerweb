@@ -191,6 +191,17 @@ function livePosts() {
   });
 }
 
+/** Read the page size from the source of truth rather than restating it here. */
+function archivePerPage() {
+  const src = readFileSync('src/data/site.ts', 'utf8');
+  const m = src.match(/ARCHIVE_PER_PAGE\s*=\s*(\d+)/);
+  if (!m) {
+    console.error('[assert-publish-ready] ARCHIVE_PER_PAGE not found in src/data/site.ts');
+    process.exit(1);
+  }
+  return Number(m[1]);
+}
+
 function assertPublishedFloor() {
   const floor = readFloor(PUBLISHED_FLOOR_FILE);
   const live = livePosts();
@@ -256,8 +267,13 @@ function assertDistHasPublishedPosts() {
     process.exit(1);
   }
 
-  // Listing pages must exist or the blog looks "empty" even when posts built
-  const listings = ['blog/index.html', 'category/blog/index.html'];
+  // Listing pages must exist or the blog looks "empty" even when posts built.
+  // /category/blog/ was the archive until the category routes were dropped;
+  // /blog/ is the paginated archive now and the old URLs 301 to it, so the
+  // second page here is the last one rather than the first.
+  const listings = ['blog/index.html'];
+  const lastPage = Math.ceil(live.length / archivePerPage());
+  if (lastPage > 1) listings.push(join('blog', 'page', String(lastPage), 'index.html'));
   const missingListings = listings.filter((rel) => !existsSync(join('dist', rel)));
   if (missingListings.length > 0) {
     console.error(

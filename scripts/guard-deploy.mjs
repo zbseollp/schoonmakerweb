@@ -11,6 +11,7 @@
  */
 import { readFileSync, existsSync, readdirSync } from 'node:fs';
 import { join } from 'node:path';
+import { redirectFor } from '../worker/redirects.mjs';
 
 const asJson = process.argv.includes('--json');
 const allowLoss = process.env.ALLOW_CONTENT_LOSS === '1';
@@ -60,6 +61,16 @@ function isIntentionalSpamDrop(urlPath) {
   } catch {
     return true;
   }
+}
+
+/**
+ * A URL the Worker now 301s is not content loss, as long as it lands somewhere
+ * this build actually contains. Checked against the same rules the Worker uses
+ * so the two cannot drift apart.
+ */
+function redirectsIntoBuild(urlPath, built) {
+  const target = redirectFor(urlPath);
+  return target !== null && built.has(target);
 }
 
 async function fetchText(url) {
@@ -151,9 +162,14 @@ const candidates = [...liveLinks].filter((u) => !built.has(u)).sort();
 const missing = [];
 const alreadyDead = [];
 const spamDrops = [];
+const redirected = [];
 for (const u of candidates) {
   if (isIntentionalSpamDrop(u)) {
     spamDrops.push(u);
+    continue;
+  }
+  if (redirectsIntoBuild(u, built)) {
+    redirected.push(u);
     continue;
   }
   let ok = false;
@@ -169,6 +185,12 @@ if (spamDrops.length > 0) {
   console.log(
     `[guard-deploy] allowing ${spamDrops.length} intentional spam drop(s): ` +
       spamDrops.slice(0, 5).join(', ') + (spamDrops.length > 5 ? ' …' : ''),
+  );
+}
+if (redirected.length > 0) {
+  console.log(
+    `[guard-deploy] allowing ${redirected.length} URL(s) the Worker redirects into this build: ` +
+      redirected.slice(0, 5).join(', ') + (redirected.length > 5 ? ' …' : ''),
   );
 }
 if (alreadyDead.length > 0) {

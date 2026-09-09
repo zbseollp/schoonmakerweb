@@ -1,0 +1,36 @@
+---
+import BaseLayout from "../../../layouts/BaseLayout.astro";
+import Archive from "../../../components/Archive.astro";
+import Pagination from "../../../components/Pagination.astro";
+import { posts, chunk } from "../../../lib/content";
+import { site, ARCHIVE_PER_PAGE as PER } from "../../../data/site";
+
+export function getStaticPaths() {
+  const pages = chunk(posts, PER);
+  // Page 1 is /blog/ itself, so start at index 1.
+  return pages.slice(1).map((items, i) => ({
+    params: { page: String(i + 2) },
+    props: { n: i + 2, total: pages.length, items },
+  }));
+}
+
+const { n, total, items } = Astro.props;
+---
+<BaseLayout
+  title={`Onze blogs - pagina ${n}${site.titleSuffix}`}
+  canonical={`${site.domain}/blog/page/${n}/`}
+  noindex
+>
+  <div class="page">
+    <div class="page__wrap">
+      <h1 class="page__title">Onze blogs</h1>
+      <p class="meta">Pagina {n} van {total}</p>
+      <Archive posts={items} />
+      <Pagination
+        current={n}
+        total={total}
+        href={(p) => (p === 1 ? "/blog/" : `/blog/page/${p}/`)}
+      />
+    </div>
+  </div>
+</BaseLayout>

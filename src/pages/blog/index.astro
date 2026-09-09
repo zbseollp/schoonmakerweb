@@ -1,0 +1,40 @@
+---
+import BaseLayout from "../../layouts/BaseLayout.astro";
+import Archive from "../../components/Archive.astro";
+import Pagination from "../../components/Pagination.astro";
+import { pageByPath, posts, chunk } from "../../lib/content";
+import { site, ARCHIVE_PER_PAGE as PER } from "../../data/site";
+
+// On WordPress /blog/ was an Elementor page showing a hand-picked dozen, while
+// the real archive lived under /category/blog/. Mirroring that one-to-one left
+// visitors on a page that looks like the site has twelve articles, so /blog/ is
+// the paginated archive now and the category routes are gone. The Elementor
+// page's own copy still renders above the list, and the old /category/ URLs
+// redirect here — see worker/redirects.mjs; they are indexed.
+const page = pageByPath("/blog/");
+const pages = chunk(posts, PER);
+---
+<BaseLayout
+  title={page?.seoTitle || "Onze blogs" + site.titleSuffix}
+  description={page?.seoDescription || site.description}
+  canonical={site.domain + "/blog/"}
+>
+  <div class="page">
+    <div class="page__wrap">
+      <h1 class="page__title">{page?.title || "Onze blogs"}</h1>
+      {page?.content && <div class="prose" set:html={page.content} />}
+    </div>
+    <div class="wrap">
+      <div class="block-head">
+        <h2>Alle blogs</h2>
+        <p class="meta">{posts.length} blogs</p>
+      </div>
+      <Archive posts={pages[0] ?? []} />
+      <Pagination
+        current={1}
+        total={pages.length}
+        href={(n) => (n === 1 ? "/blog/" : `/blog/page/${n}/`)}
+      />
+    </div>
+  </div>
+</BaseLayout>

@@ -11,11 +11,15 @@
  *    op het echte domein is dat een no-op.
  * 2. WordPress serveerde de RSS-feed op /feed/. Astro bouwt hem als /feed.xml,
  *    dus /feed/ wordt hier doorgegeven aan dat bestand.
+ * 3. De categorie-archieven zijn vervangen door /blog/. Hun 20 pagina's staan
+ *    geindexeerd, dus ze krijgen een 301 in plaats van een 404.
  *
  * De ETag van het bronbestand hoort NIET ongewijzigd terug bij een herschreven
  * body: anders levert een revalidatie een 304 op en blijft er een oude versie
  * in de browsercache hangen.
  */
+import { redirectFor } from './redirects.mjs';
+
 const CANONICAL = 'https://schoonmakerweb.nl';
 const SITEMAP = /^\/sitemap[\w.-]*\.xml$/;
 const ALIAS = {
@@ -28,6 +32,12 @@ const ALIAS = {
 export default {
   async fetch(request, env) {
     const url = new URL(request.url);
+
+    const target = redirectFor(url.pathname);
+    if (target) {
+      return Response.redirect(new URL(target + url.search, url.origin).toString(), 301);
+    }
+
     const alias = ALIAS[url.pathname];
     if (!SITEMAP.test(url.pathname) && !alias) return env.ASSETS.fetch(request);
 
