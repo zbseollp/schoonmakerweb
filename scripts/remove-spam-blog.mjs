@@ -1,8 +1,14 @@
 #!/usr/bin/env node
 /**
- * Detect SEO spam / malware-injected posts in content.json.
- * Never deletes posts — writes src/data/spam-slugs.json so the loader hides them.
- * Strips casino/affiliate malware from bodies of posts that stay live.
+ * Strip injected casino/affiliate malware from posts in content.json.
+ *
+ * Hiding is a last resort: a post only lands in src/data/spam-slugs.json when
+ * sanitising fails to get the injection out. Titles never hide a post. An
+ * earlier version hid on title alone (`online casino`, `gaming`,
+ * `entertainmentruimte`, …) and took 9 clean cleaning articles down with it,
+ * while those posts stayed "published" in Payload — so publishing them looked
+ * broken. The title lists survive below as a report, and behind
+ * --apply-offtopic.
  *
  *   node scripts/remove-spam-blog.mjs
  *   node scripts/remove-spam-blog.mjs --dry-run
@@ -124,39 +130,22 @@ function malwareHitCount(html) {
   return (html.match(re) || []).length;
 }
 
+/**
+ * Judge a post AFTER it has been sanitised.
+ *
+ * A title says what an article is about, not whether it was hacked, so it never
+ * hides anything on its own. Only an injection the sanitiser could not remove
+ * does — and that is a sanitiser bug worth surfacing, not a page worth serving.
+ */
 function reasonFor(post) {
   const titleHay = `${post.slug} ${post.title} ${post.seoTitle || ''}`;
-  const body = String(post.content || '');
+  const residue = `${post.content || ''}\n${post.excerpt || ''}\n${post.seoDescription || ''}`;
 
-  for (const re of HARD_TITLE) {
-    if (re.test(titleHay)) return `hard-title:${re}`;
-  }
-
-  // Cloaked “schoon + gaming/casino” titles — hide on title alone
-  if (isCloaked(titleHay) && !/\bbetrouwbare.?partner.?voor.?huis/i.test(titleHay)) {
-    // Allow real cleaning titles that only mention "casino" as a venue type
-    const venueOnly =
-      isCleaning(titleHay) &&
-      !/\bgaming|entertainment|spelavond|digitaal.?vermaak|jackpot|cruks|voor-spel|winnen-met-schoon|spanning-thuis/i.test(
-        titleHay,
-      );
-    if (!venueOnly) return 'hard-cloaked:title';
-  }
-
-  // Heavy affiliate injection → hide even if title looks cleaning-ish
-  if (malwareHitCount(body) >= 2 || /\bhashlucky\b/i.test(body)) {
-    return 'hard-body:affiliate-injection';
-  }
-
+  if (malwareHitCount(residue) > 0) return 'hard-body:injection-survived-sanitize';
   for (const re of HARD_BODY) {
-    if (re.test(body) || re.test(titleHay)) {
-      // Real cleaning article with light injection → sanitize, keep
-      if (isCleaning(titleHay) && !isCloaked(titleHay)) return null;
-      return `hard-body:${re}`;
-    }
+    if (re.test(residue)) return `hard-body:${re}`;
   }
 
-  if (isCleaning(titleHay)) return null;
   // Off-topic gossip stays live by default so old articles keep showing.
   // Pass --apply-offtopic to hide them again.
   if (process.argv.includes('--apply-offtopic')) {
@@ -165,6 +154,46 @@ function reasonFor(post) {
     }
   }
   return null;
+}
+
+/** Casino/gaming titles worth a human glance. Reported only, never acted on. */
+function noteworthyTitle(post) {
+  const titleHay = `${post.slug} ${post.title} ${post.seoTitle || ''}`;
+  for (const re of HARD_TITLE) if (re.test(titleHay)) return String(re);
+  if (isCloaked(titleHay) && !isCleaning(titleHay)) return 'cloaked-title';
+  return null;
+}
+
+/**
+ * Excerpt and SEO description are plain text, so the HTML-shaped scrubbing in
+ * sanitizeContent cannot reach them — that is how "zonder Cruks" kept showing
+ * up in meta descriptions of posts whose body was already clean. Drop the
+ * poisoned sentence; if that guts the field, rebuild it from the body.
+ */
+const META_SENTENCE = new RegExp(
+  `[^.!?]*(?:${MALWARE_HOST}|zonder[\\s-]?cruks|cruks\\s+omzeilen|online[\\s-]?casino|buitenlandse\\s+casino|cryptogok|goksites)[^.!?]*[.!?]?`,
+  'gi',
+);
+
+function sanitizeMeta(post) {
+  let changed = false;
+  const fallback = String(post.content || '')
+    .replace(/<[^>]+>/g, ' ')
+    .replace(/\s+/g, ' ')
+    .trim()
+    .slice(0, 160);
+
+  for (const field of ['excerpt', 'seoDescription']) {
+    const before = String(post[field] || '');
+    if (!before) continue;
+    let after = before.replace(META_SENTENCE, '').replace(/\s+/g, ' ').trim();
+    if (after.length < 40) after = fallback;
+    if (after !== before) {
+      post[field] = after;
+      changed = true;
+    }
+  }
+  return changed;
 }
 
 /**
@@ -228,40 +257,27 @@ const posts = Array.isArray(data.posts) ? data.posts : [];
 const hits = [];
 let sanitized = 0;
 
-/** Sticky: keep previous HARD spam only (never sticky-hide restored offtopic). */
-const previousHard = new Set();
-if (existsSync(OUT)) {
-  try {
-    const raw = JSON.parse(readFileSync(OUT, 'utf8'));
-    const details = Array.isArray(raw?.details) ? raw.details : [];
-    for (const d of details) {
-      const reason = String(d?.reason || '');
-      if (/^hard-|^sticky:previous-hard/i.test(reason)) previousHard.add(String(d.slug));
-    }
-  } catch {
-    /* ignore */
-  }
-}
+// Deliberately not sticky. The previous run carried every hard- hit forward as
+// sticky:previous-hard, so a slug caught once by a title regex stayed hidden
+// even after the regex was softened — the fix looked applied and changed nothing.
+const noted = [];
 
 for (const p of posts) {
   if (!p?.slug) continue;
-  let reason = reasonFor(p);
-  if (!reason && previousHard.has(p.slug)) reason = 'sticky:previous-hard';
+
+  // Sanitise first, then judge: the verdict has to be about what actually ships.
+  const { html, changed } = sanitizeContent(p.content);
+  if (changed) p.content = html;
+  const metaChanged = sanitizeMeta(p);
+  if (changed || metaChanged) sanitized += 1;
+
+  const reason = reasonFor(p);
   if (reason) {
     hits.push({ slug: p.slug, reason, title: p.title });
-    // Still scrub malware from stored HTML so a future un-hide is safe
-    const { html, changed } = sanitizeContent(p.content);
-    if (changed) {
-      p.content = html;
-      sanitized += 1;
-    }
     continue;
   }
-  const { html, changed } = sanitizeContent(p.content);
-  if (changed) {
-    p.content = html;
-    sanitized += 1;
-  }
+  const note = noteworthyTitle(p);
+  if (note) noted.push({ slug: p.slug, title: p.title, note });
 }
 
 hits.sort((a, b) => a.slug.localeCompare(b.slug));
@@ -287,6 +303,11 @@ console.log(
 );
 for (const h of hits.slice(0, 12)) console.log(`  · ${h.slug}  (${h.reason})`);
 if (hits.length > 12) console.log(`  … +${hits.length - 12} more`);
+if (noted.length) {
+  console.log(`[remove-spam] ${noted.length} post(s) carry a casino/gaming title but ship clean — kept live:`);
+  for (const n of noted.slice(0, 8)) console.log(`  · ${n.slug}  (${n.note})`);
+  if (noted.length > 8) console.log(`  … +${noted.length - 8} more`);
+}
 
 if (dryRun) {
   console.log('[remove-spam] dry-run — not writing content files');
