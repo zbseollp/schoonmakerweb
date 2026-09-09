@@ -18,6 +18,7 @@ import { join } from 'node:path';
 
 const CONTENT = 'src/data/content.json';
 const OUT = 'src/data/spam-slugs.json';
+const DROPPED = 'src/data/dropped-slugs.json';
 const dryRun = process.argv.includes('--dry-run');
 
 /** Known malware / casino-affiliate hosts injected into WordPress. */
@@ -284,6 +285,31 @@ if (!existsSync(CONTENT)) {
   process.exit(1);
 }
 
+/**
+ * Editorial takedowns, maintained by hand in dropped-slugs.json.
+ *
+ * Detection cannot decide these: the three posts dropped on 2026-09-09 were
+ * clean by then — sanitising had already removed the injection, and what it
+ * left was 56 to 256 characters of text. That is a judgement about whether a
+ * page is worth serving, so it is written down rather than inferred.
+ */
+function editorialDrops() {
+  if (!existsSync(DROPPED)) return new Map();
+  try {
+    const raw = JSON.parse(readFileSync(DROPPED, 'utf8'));
+    const list = Array.isArray(raw) ? raw : raw.slugs || [];
+    return new Map(
+      list.map((e) =>
+        typeof e === 'string' ? [e, 'editorial'] : [String(e.slug), `editorial:${e.reason || 'no reason given'}`],
+      ),
+    );
+  } catch (err) {
+    console.error(`[remove-spam] ${DROPPED} is unreadable — refusing to guess: ${err.message}`);
+    process.exit(1);
+  }
+}
+
+const dropped = editorialDrops();
 const data = JSON.parse(readFileSync(CONTENT, 'utf8'));
 const posts = Array.isArray(data.posts) ? data.posts : [];
 const hits = [];
@@ -304,7 +330,7 @@ for (const p of posts) {
   const assetChanged = dropMalwareAssets(p);
   if (changed || metaChanged || assetChanged) sanitized += 1;
 
-  const reason = reasonFor(p);
+  const reason = dropped.get(p.slug) ?? reasonFor(p);
   if (reason) {
     hits.push({ slug: p.slug, reason, title: p.title });
     continue;
@@ -331,8 +357,16 @@ for (const rel of MALWARE_ASSETS) {
   console.log(`[remove-spam] removed asset ${rel}`);
 }
 
+const unknownDrops = [...dropped.keys()].filter((slug) => !posts.some((p) => p?.slug === slug));
+if (unknownDrops.length) {
+  console.warn(
+    `[remove-spam] ${DROPPED} lists ${unknownDrops.length} slug(s) that are not in content.json: ` +
+      unknownDrops.join(', '),
+  );
+}
+
 console.log(
-  `[remove-spam] ${hits.length} spam/off-topic of ${posts.length} posts; sanitized ${sanitized}; assets removed ${removedAssets}`,
+  `[remove-spam] ${hits.length} hidden of ${posts.length} posts (${dropped.size} editorial); sanitized ${sanitized}; assets removed ${removedAssets}`,
 );
 for (const h of hits.slice(0, 12)) console.log(`  · ${h.slug}  (${h.reason})`);
 if (hits.length > 12) console.log(`  … +${hits.length - 12} more`);

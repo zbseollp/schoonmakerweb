@@ -1,7 +1,27 @@
 {
   "version": 1,
   "note": "Hidden at build time — posts stay in content.json. Do not delete.",
-  "generatedAt": "2026-09-09T08:12:06.413Z",
-  "slugs": [],
-  "details": []
+  "generatedAt": "2026-09-09T08:22:07.884Z",
+  "slugs": [
+    "5-essentiele-stappen-om-te-nemen-voor-je-eerste-ervaring-met-online-casinos",
+    "hoe-hardwerkende-dienstverleners-ontspanning-vinden-in-digitaal-vermaak-na-een-lange-dienst",
+    "online-casinos-zoals-netflix-waarom-mensen-niet-zozeer-geinteresseerd-zijn-in-winnen-maar-in-het-verhaal"
+  ],
+  "details": [
+    {
+      "slug": "5-essentiele-stappen-om-te-nemen-voor-je-eerste-ervaring-met-online-casinos",
+      "reason": "editorial:56 characters of text left — the article was almost entirely injected casino promo, and sanitising it left a bare heading",
+      "title": "5 Essentiële Stappen om te Nemen vóór je Eerste Ervaring met Online Casino’s"
+    },
+    {
+      "slug": "hoe-hardwerkende-dienstverleners-ontspanning-vinden-in-digitaal-vermaak-na-een-lange-dienst",
+      "reason": "editorial:256 characters of text left out of 4125 — nothing publishable survived sanitising",
+      "title": "Hoe hardwerkende dienstverleners ontspanning vinden in digitaal vermaak na een lange dienst"
+    },
+    {
+      "slug": "online-casinos-zoals-netflix-waarom-mensen-niet-zozeer-geinteresseerd-zijn-in-winnen-maar-in-het-verhaal",
+      "reason": "editorial:206 characters of text left out of 14048 — nothing publishable survived sanitising",
+      "title": "Online casino’s zoals Netflix: waarom mensen niet zozeer geïnteresseerd zijn in winnen, maar in het ‘verhaal’"
+    }
+  ]
 }

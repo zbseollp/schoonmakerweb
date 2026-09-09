@@ -1,0 +1,18 @@
+{
+  "version": 1,
+  "note": "Editorial takedowns, maintained by hand. remove-spam-blog.mjs folds these into spam-slugs.json every build, so the loader hides them and guard-deploy treats their disappearance as intentional. The posts stay in content.json, so undoing a drop is one line.",
+  "slugs": [
+    {
+      "slug": "5-essentiele-stappen-om-te-nemen-voor-je-eerste-ervaring-met-online-casinos",
+      "reason": "56 characters of text left — the article was almost entirely injected casino promo, and sanitising it left a bare heading"
+    },
+    {
+      "slug": "online-casinos-zoals-netflix-waarom-mensen-niet-zozeer-geinteresseerd-zijn-in-winnen-maar-in-het-verhaal",
+      "reason": "206 characters of text left out of 14048 — nothing publishable survived sanitising"
+    },
+    {
+      "slug": "hoe-hardwerkende-dienstverleners-ontspanning-vinden-in-digitaal-vermaak-na-een-lange-dienst",
+      "reason": "256 characters of text left out of 4125 — nothing publishable survived sanitising"
+    }
+  ]
+}
