@@ -25,6 +25,10 @@
     {
       "slug": "test",
       "reason": "throwaway test post, set to draft in Payload; listed here so guard-deploy treats its removal as intentional"
+    },
+    {
+      "slug": "test-test",
+      "reason": "throwaway test post deleted in Payload but still live on schoonmakerweb.nl; listed so guard-deploy allows the deploy that takes /test-test/ offline"
     }
   ]
 }
