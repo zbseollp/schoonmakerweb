@@ -19,4 +19,4 @@ export const authors: Record<number, { slug: string; name: string }> = {
   5: { slug: "lisanne", name: "Lisanne" },
 };
 
-export const ARCHIVE_PER_PAGE = 10;
+export const ARCHIVE_PER_PAGE = 12;

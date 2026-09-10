@@ -276,29 +276,152 @@ img { max-width: 100%; height: auto; display: block; }
 }
 .compare-card__hint { font-size: 0.8125rem; color: var(--wine); }
 
+/* Blog hero */
+.blog-hero {
+  background:
+    linear-gradient(180deg, var(--wine-tint) 0%, #fff 72%);
+  border-bottom: 1px solid var(--line);
+  padding: clamp(2.25rem, 5vw, 3.75rem) 0 clamp(1.75rem, 3.5vw, 2.5rem);
+}
+.blog-hero--compact { padding-block: clamp(1.75rem, 3.5vw, 2.5rem); }
+.blog-hero__inner { max-width: 40rem; }
+.blog-hero__eyebrow {
+  margin: 0 0 0.45rem;
+  font-family: var(--font-head);
+  font-size: 0.8125rem;
+  font-weight: 600;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--wine);
+}
+.blog-hero__title {
+  margin: 0 0 0.55rem;
+  color: var(--ink);
+}
+.blog-hero__lead {
+  margin: 0;
+  color: var(--ink-muted);
+  font-size: 1.05rem;
+  line-height: 1.55;
+  max-width: 34rem;
+}
+
 /* Blogkaarten */
-.post-grid { display: grid; gap: 1.75rem; grid-template-columns: repeat(auto-fill, minmax(270px, 1fr)); }
-.post-card { display: flex; flex-direction: column; gap: 0.7rem; }
+.post-grid {
+  display: grid;
+  gap: 1.5rem;
+  grid-template-columns: repeat(auto-fill, minmax(270px, 1fr));
+}
+.post-grid--archive {
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+}
+@media (max-width: 960px) {
+  .post-grid--archive { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+}
+@media (max-width: 600px) {
+  .post-grid--archive { grid-template-columns: 1fr; }
+}
+
+.post-card {
+  display: flex;
+  flex-direction: column;
+  height: 100%;
+  background: var(--paper);
+  border: 1px solid var(--line);
+  border-radius: calc(var(--radius) + 2px);
+  box-shadow: var(--shadow);
+  overflow: hidden;
+  transition: border-color 0.2s ease, box-shadow 0.2s ease, transform 0.2s ease;
+}
+.post-card:hover {
+  border-color: color-mix(in srgb, var(--wine) 35%, var(--line));
+  box-shadow: 0 2px 4px rgba(43, 43, 43, 0.06), 0 18px 36px -18px rgba(114, 43, 49, 0.28);
+  transform: translateY(-3px);
+}
 .post-card__media {
-  display: block; aspect-ratio: 3 / 2; overflow: hidden;
-  border-radius: var(--radius); background: var(--surface-alt);
+  display: block;
+  aspect-ratio: 16 / 10;
+  overflow: hidden;
+  background: var(--surface-alt);
+  flex-shrink: 0;
 }
 .post-card__media img {
-  width: 100%; height: 100%; object-fit: cover;
-  transition: transform 0.4s cubic-bezier(0.2, 0, 0.2, 1);
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  transition: transform 0.45s cubic-bezier(0.2, 0, 0.2, 1);
 }
-.post-card:hover .post-card__media img { transform: scale(1.035); }
-.post-card__body { display: flex; flex-direction: column; gap: 0.3rem; }
-.post-card h3 { font-size: 1.0625rem; line-height: 1.32; margin: 0; }
-.post-card h3 a { color: var(--ink); }
-.post-card h3 a:hover { color: var(--wine); text-decoration: none; }
-.post-card p { margin: 0; font-size: 0.9rem; color: var(--ink-muted); }
+.post-card:hover .post-card__media img { transform: scale(1.04); }
+.post-card__body {
+  display: flex;
+  flex-direction: column;
+  gap: 0.45rem;
+  flex: 1;
+  padding: 1.05rem 1.15rem 1.2rem;
+}
+.post-card__date {
+  margin: 0;
+  font-family: var(--font-head);
+  font-size: 0.75rem;
+  font-weight: 500;
+  letter-spacing: 0.02em;
+  color: var(--ink-muted);
+  text-transform: uppercase;
+}
+.post-card h3 {
+  font-size: 1.05rem;
+  line-height: 1.35;
+  margin: 0;
+}
+.post-card h3 a {
+  color: var(--ink);
+  text-decoration: none;
+}
+.post-card h3 a:hover { color: var(--wine); }
+.post-card__excerpt {
+  margin: 0;
+  font-size: 0.9rem;
+  color: var(--ink-muted);
+  line-height: 1.55;
+  display: -webkit-box;
+  -webkit-line-clamp: 3;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+}
+.post-card__more {
+  margin-top: auto;
+  padding-top: 0.65rem;
+  font-family: var(--font-head);
+  font-size: 0.875rem;
+  font-weight: 600;
+  color: var(--wine);
+  text-decoration: none;
+}
+.post-card__more:hover { color: var(--wine-dark); text-decoration: underline; }
 .post-card .meta { margin: auto 0 0; padding-top: 0.2rem; }
 
-/* Blogkaart zonder foto: een rustig vlak met een accentstreep, zodat het
-   raster niet uit elkaar valt tussen wél en niet geïllustreerde berichten. */
-.post-card__media--blank { position: relative; background: var(--navy-tint); }
+/* Blogkaart zonder foto */
+.post-card__media--blank {
+  position: relative;
+  display: grid;
+  place-items: center;
+  background:
+    linear-gradient(145deg, var(--navy-tint) 0%, #f7f0f1 100%);
+}
 .post-card__media--blank::after {
-  content: ""; position: absolute; left: 1.15rem; bottom: 1.15rem;
-  width: 2.25rem; height: 3px; background: var(--wine); border-radius: 2px;
+  content: "";
+  position: absolute;
+  inset: auto auto 1.1rem 1.15rem;
+  width: 2.25rem;
+  height: 3px;
+  background: var(--wine);
+  border-radius: 2px;
+}
+.post-card__brand {
+  font-family: var(--font-head);
+  font-size: 0.95rem;
+  font-weight: 600;
+  color: var(--wine);
+  opacity: 0.85;
+  letter-spacing: -0.02em;
 }
