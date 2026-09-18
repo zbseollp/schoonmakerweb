@@ -51,13 +51,54 @@ function mdToHtml(md) {
     .join('\n');
 }
 
-function isDraft(data) {
-  const d = String(data.draft ?? '').toLowerCase();
-  if (d === 'true' || d === '1' || d === 'yes' || d === 'draft') return true;
+const STUB_SLUGS = new Set(['hello-world', 'blog-template']);
+
+/**
+ * CMS publishStatus / _status is source of truth.
+ * Leftover Payload `draft: true` alone must NOT skip a published post
+ * (that made CMS articles never appear in content.json / on the live site).
+ */
+function shouldSkipPost(slug, data) {
+  if (STUB_SLUGS.has(slug)) return true;
+  const flag = (v) => {
+    const s = String(v ?? '').toLowerCase();
+    return s === 'true' || s === '1' || s === 'yes';
+  };
+  if (flag(data._spam) || flag(data._unpublished)) return true;
   const status = String(data.publishStatus ?? data._status ?? '').toLowerCase();
   // Empty status = treat as published (Payload sync often omits the field).
   if (!status) return false;
-  return status !== 'published' && status !== 'publish';
+  if (status === 'published' || status === 'publish') return false;
+  if (
+    status === 'unpublished' ||
+    status === 'unpublish' ||
+    status === 'draft' ||
+    status === 'private'
+  ) {
+    return true;
+  }
+  return false;
+}
+
+function mediaUrl(value) {
+  if (!value) return '';
+  if (typeof value === 'string') {
+    const s = value.trim();
+    if (!s || s === 'null' || s === 'undefined') return '';
+    // Simple frontmatter may stringify a Payload media object poorly; keep URLs only.
+    if (/^https?:\/\//i.test(s) || s.startsWith('/')) return s;
+    return '';
+  }
+  if (typeof value === 'object' && value !== null) {
+    const u = value.url || value.src || value.filename;
+    return typeof u === 'string' ? u : '';
+  }
+  return '';
+}
+
+function firstBodyImage(html) {
+  const m = String(html || '').match(/<img[^>]+src=["']([^"']+)["']/i);
+  return m ? m[1] : '';
 }
 
 function toEntry(slug, data, body) {
@@ -66,7 +107,13 @@ function toEntry(slug, data, body) {
   const excerpt = data.excerpt || data.description || '';
   const html = mdToHtml(body);
   const image =
-    data.featuredImage || data.heroImage || data.image || data.ogImage || '';
+    mediaUrl(data.featuredImage) ||
+    mediaUrl(data.heroImage) ||
+    mediaUrl(data.image) ||
+    mediaUrl(data.thumbnail) ||
+    mediaUrl(data.ogImage) ||
+    firstBodyImage(html) ||
+    '';
   return {
     slug,
     path: `/${slug}/`,
@@ -78,11 +125,11 @@ function toEntry(slug, data, body) {
     excerpt,
     categories: [{ slug: 'blog', name: 'Blog' }],
     tags: [],
-    featuredImage: typeof image === 'string' ? image : '',
+    featuredImage: image,
     seoTitle: title,
     seoDescription: excerpt,
     canonical: `https://schoonmakerweb.nl/${slug}/`,
-    ogImage: typeof image === 'string' ? image : '',
+    ogImage: image,
     _source: 'payload',
   };
 }
@@ -102,11 +149,21 @@ const now = Date.now();
 let merged = 0;
 let skipped = 0;
 
+let added = 0;
+let updated = 0;
+
 for (const file of files) {
-  const slug = file.replace(/\.mdx?$/i, '');
   const raw = readFileSync(join(BLOG, file), 'utf8');
   const { data: fm, body } = parseFrontmatter(raw);
-  if (isDraft(fm)) {
+  // Prefer CMS slug when present (filenames can diverge after sync).
+  const slug = String(fm.slug || file.replace(/\.mdx?$/i, ''))
+    .trim()
+    .replace(/^\/+|\/+$/g, '');
+  if (!slug) {
+    skipped += 1;
+    continue;
+  }
+  if (shouldSkipPost(slug, fm)) {
     skipped += 1;
     continue;
   }
@@ -129,6 +186,7 @@ for (const file of files) {
     bySlug.set(slug, {
       ...prev,
       ...entry,
+      path: `/${slug}/`,
       // Never gut a full WP article with an empty/stub CMS body.
       content: payloadHasBody ? entry.content : prev.content,
       excerpt: entry.excerpt || prev.excerpt,
@@ -140,15 +198,19 @@ for (const file of files) {
       author: prev.author ?? entry.author,
       modified: entry.modified || prev.modified || entry.date || prev.date,
     });
+    updated += 1;
   } else {
     bySlug.set(slug, entry);
+    added += 1;
   }
   merged += 1;
 }
 
+// Never drop existing JSON posts just because a .md was missing this sync.
 data.posts = [...bySlug.values()];
 writeFileSync(CONTENT, JSON.stringify(data));
 console.log(
   `[merge-payload-blog] merged ${merged} Payload post(s) into content.json ` +
-    `(${skipped} draft/scheduled skipped; ${data.posts.length} total posts)`,
+    `(+${added} new, ~${updated} updated, ${skipped} unpublished/scheduled/stub skipped; ` +
+    `${data.posts.length} total posts)`,
 );

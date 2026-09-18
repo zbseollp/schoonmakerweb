@@ -35,8 +35,14 @@ const spamList = Array.isArray(spamRaw)
   : ((spamRaw as { slugs?: string[] }).slugs ?? []);
 const spamSlugs = new Set(spamList.map(String));
 
+const STUB_SLUGS = new Set(["hello-world", "blog-template"]);
+
+/**
+ * Live listings — do NOT filter leftover Payload `draft: true`.
+ * Hide only spam, stubs, or dates too far in the future.
+ */
 function isLivePost(p: Entry): boolean {
-  if (!p?.slug || spamSlugs.has(p.slug)) return false;
+  if (!p?.slug || spamSlugs.has(p.slug) || STUB_SLUGS.has(p.slug)) return false;
   if (!p.date) return true;
   const t = Date.parse(p.date);
   if (Number.isNaN(t)) return true;

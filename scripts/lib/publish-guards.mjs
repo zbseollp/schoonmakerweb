@@ -12,5 +12,6 @@ export const EXPECTED_TENANT = 'schoonmakerweb';
 export const EXPECTED_GITHUB_REPO = 'zbseollp/schoonmakerweb';
 export const FUTURE_SLACK_MS = 48 * 60 * 60 * 1000;
 export const MIN_CANARY_COUNT = 5;
+/** Defaults only used when floor files are missing (ensure-floors restores/ratchets). */
 export const DEFAULT_COUNT_FLOOR = 180;
 export const DEFAULT_PUBLISHED_FLOOR = 162;

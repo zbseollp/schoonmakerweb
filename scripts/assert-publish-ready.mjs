@@ -202,6 +202,17 @@ function assertContentPipeline() {
     );
     process.exit(1);
   }
+  if (
+    /data\.draft\s*!==\s*true/.test(ts) ||
+    /\.filter\([^)]*draft/.test(ts) ||
+    /if\s*\(\s*(?:p\.)?data\.draft\s*\)/.test(ts)
+  ) {
+    console.error(
+      `\n[assert-publish-ready] BUILD ABORTED — ${CONTENT_TS} filters on leftover draft.\n` +
+        `That made published CMS posts disappear between deploys. Use spam/stubs only.\n`,
+    );
+    process.exit(1);
+  }
 }
 
 function spamSet() {
