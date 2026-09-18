@@ -11,6 +11,7 @@ import {
   DEFAULT_COUNT_FLOOR,
   DEFAULT_PUBLISHED_FLOOR,
   FUTURE_SLACK_MS,
+  isTestSlug,
 } from './lib/publish-guards.mjs';
 
 const CONTENT = 'src/data/content.json';
@@ -52,7 +53,7 @@ function liveCount() {
   }
   const now = Date.now();
   const live = posts.filter((p) => {
-    if (!p?.slug || spam.has(p.slug)) return false;
+    if (!p?.slug || spam.has(p.slug) || isTestSlug(p.slug)) return false;
     if (!p.date) return true;
     const t = Date.parse(p.date);
     if (Number.isNaN(t)) return true;

@@ -10,10 +10,10 @@
  */
 import { readFileSync, writeFileSync, existsSync, readdirSync, mkdirSync } from 'node:fs';
 import { join } from 'node:path';
+import { isScheduledFuture, isTestSlug } from './lib/publish-guards.mjs';
 
 const CONTENT = 'src/data/content.json';
 const BLOG = 'src/content/blog';
-const FUTURE_SLACK_MS = 48 * 60 * 60 * 1000;
 
 function parseFrontmatter(raw) {
   const m = raw.match(/^---\r?\n([\s\S]*?)\r?\n---\r?\n?([\s\S]*)$/);
@@ -23,12 +23,26 @@ function parseFrontmatter(raw) {
     const kv = line.match(/^([A-Za-z0-9_]+):\s*(.*)$/);
     if (!kv) continue;
     let v = kv[2].trim();
-    if ((v.startsWith('"') && v.endsWith('"')) || (v.startsWith("'") && v.endsWith("'"))) {
+    if (
+      (v.startsWith('"') && v.endsWith('"')) ||
+      (v.startsWith("'") && v.endsWith("'"))
+    ) {
       v = v.slice(1, -1);
+    } else if (v.startsWith('"') || v.startsWith("'")) {
+      // Broken Payload export with a dangling opening quote.
+      v = v.slice(1);
     }
     data[kv[1]] = v;
   }
   return { data, body: m[2].trim() };
+}
+
+function newerStamp(...values) {
+  return values
+    .map((v) => String(v || '').trim())
+    .filter(Boolean)
+    .sort()
+    .pop() || '';
 }
 
 function mdToHtml(md) {
@@ -51,15 +65,14 @@ function mdToHtml(md) {
     .join('\n');
 }
 
-const STUB_SLUGS = new Set(['hello-world', 'blog-template']);
-
 /**
  * CMS publishStatus / _status is source of truth.
- * Leftover Payload `draft: true` alone must NOT skip a published post
- * (that made CMS articles never appear in content.json / on the live site).
+ * Leftover Payload `draft: true` alone must NOT skip a published post.
+ * Test stubs never merge. Scheduled posts DO merge (stored) but stay offline
+ * until pubDate via src/lib/content.ts.
  */
 function shouldSkipPost(slug, data) {
-  if (STUB_SLUGS.has(slug)) return true;
+  if (isTestSlug(slug)) return true;
   const flag = (v) => {
     const s = String(v ?? '').toLowerCase();
     return s === 'true' || s === '1' || s === 'yes';
@@ -167,22 +180,23 @@ for (const file of files) {
     skipped += 1;
     continue;
   }
-  const dateRaw = fm.pubDate || fm.date;
-  if (dateRaw) {
-    const t = Date.parse(dateRaw);
-    if (!Number.isNaN(t) && t > now + FUTURE_SLACK_MS) {
-      skipped += 1;
-      continue;
-    }
-  }
+  // Scheduled posts are MERGED into content.json but stay offline until pubDate
+  // (src/lib/content.ts). Do not skip them here or the go-live build has nothing to show.
   const entry = toEntry(slug, fm, body);
   const prev = bySlug.get(slug);
+  const syncStamp = new Date(now).toISOString();
+  const scheduled = isScheduledFuture(entry.date || fm.pubDate || fm.date, now);
   if (prev) {
     const payloadText = String(entry.content || '')
       .replace(/<[^>]+>/g, ' ')
       .replace(/\s+/g, ' ')
       .trim();
     const payloadHasBody = payloadText.length > 40;
+    const prevText = String(prev.content || '')
+      .replace(/<[^>]+>/g, ' ')
+      .replace(/\s+/g, ' ')
+      .trim();
+    const bodyChanged = payloadHasBody && payloadText !== prevText;
     bySlug.set(slug, {
       ...prev,
       ...entry,
@@ -196,11 +210,26 @@ for (const file of files) {
       seoDescription: entry.seoDescription || prev.seoDescription,
       categories: entry.categories?.length ? entry.categories : prev.categories,
       author: prev.author ?? entry.author,
-      modified: entry.modified || prev.modified || entry.date || prev.date,
+      // Don't bump scheduled posts to "now" or they jump the queue on go-live day wrongly.
+      modified: newerStamp(
+        entry.modified,
+        prev.modified,
+        entry.date,
+        prev.date,
+        !scheduled && bodyChanged ? syncStamp : '',
+      ),
     });
     updated += 1;
   } else {
-    bySlug.set(slug, entry);
+    bySlug.set(slug, {
+      ...entry,
+      path: `/${slug}/`,
+      // Live now → sync stamp so newest uploads surface. Scheduled → keep CMS date.
+      modified: scheduled
+        ? newerStamp(entry.modified, entry.date)
+        : newerStamp(entry.modified, entry.date, syncStamp),
+      date: entry.date || syncStamp,
+    });
     added += 1;
   }
   merged += 1;
@@ -211,6 +240,6 @@ data.posts = [...bySlug.values()];
 writeFileSync(CONTENT, JSON.stringify(data));
 console.log(
   `[merge-payload-blog] merged ${merged} Payload post(s) into content.json ` +
-    `(+${added} new, ~${updated} updated, ${skipped} unpublished/scheduled/stub skipped; ` +
+    `(+${added} new, ~${updated} updated, ${skipped} unpublished/test skipped; ` +
     `${data.posts.length} total posts)`,
 );

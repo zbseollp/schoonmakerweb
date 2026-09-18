@@ -4,13 +4,13 @@
  * Wired into prepare:blog after spam clean + validate.
  */
 import { readFileSync, existsSync } from 'node:fs';
+import { FUTURE_SLACK_MS, isTestSlug } from './lib/publish-guards.mjs';
 
 const CONTENT = 'src/data/content.json';
 const SPAM = 'src/data/spam-slugs.json';
 const PKG = 'package.json';
 const PUBLISHED_FLOOR = '.blog-published-floor';
 const COUNT_FLOOR = '.blog-count-floor';
-const FUTURE_SLACK_MS = 48 * 60 * 60 * 1000;
 
 function fail(msg) {
   console.error(`\n[verify-blog-pipeline] BUILD ABORTED — ${msg}\n`);
@@ -42,7 +42,7 @@ const spamRaw = JSON.parse(readFileSync(SPAM, 'utf8'));
 const spam = new Set((Array.isArray(spamRaw) ? spamRaw : spamRaw.slugs || []).map(String));
 const now = Date.now();
 const live = posts.filter((p) => {
-  if (!p?.slug || spam.has(p.slug)) return false;
+  if (!p?.slug || spam.has(p.slug) || isTestSlug(p.slug)) return false;
   if (!p.date) return true;
   const t = Date.parse(p.date);
   if (Number.isNaN(t)) return true;

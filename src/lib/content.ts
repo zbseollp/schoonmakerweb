@@ -1,6 +1,7 @@
 import raw from "../data/content.json";
 import spamRaw from "../data/spam-slugs.json";
 import { authors } from "../data/site";
+import { isScheduledFuture, isTestSlug } from "./publish";
 
 export type Term = { slug: string; name: string };
 
@@ -27,26 +28,21 @@ const data = raw as {
   posts: Entry[]; pages: Entry[]; magic: Entry[]; categories: Term[]; tags: Term[];
 };
 
-/** CMS dates can be a few hours ahead of build time — keep ~48h slack. */
-const FUTURE_SLACK_MS = 48 * 60 * 60 * 1000;
-
 const spamList = Array.isArray(spamRaw)
   ? spamRaw
   : ((spamRaw as { slugs?: string[] }).slugs ?? []);
 const spamSlugs = new Set(spamList.map(String));
 
-const STUB_SLUGS = new Set(["hello-world", "blog-template"]);
-
 /**
- * Live listings — do NOT filter leftover Payload `draft: true`.
- * Hide only spam, stubs, or dates too far in the future.
+ * Live listings / routes:
+ * - Hide spam + test stubs
+ * - Hide scheduled posts until their pubDate (small clock skew only)
+ * - Do NOT filter leftover Payload `draft: true`
  */
 function isLivePost(p: Entry): boolean {
-  if (!p?.slug || spamSlugs.has(p.slug) || STUB_SLUGS.has(p.slug)) return false;
-  if (!p.date) return true;
-  const t = Date.parse(p.date);
-  if (Number.isNaN(t)) return true;
-  return t <= Date.now() + FUTURE_SLACK_MS;
+  if (!p?.slug || spamSlugs.has(p.slug) || isTestSlug(p.slug)) return false;
+  if (isScheduledFuture(p.date)) return false;
+  return true;
 }
 
 function activityStamp(p: Entry): string {

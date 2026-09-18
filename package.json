@@ -7,6 +7,7 @@
   "scripts": {
     "dev": "npm run prepare:blog && astro dev",
     "prepare:blog": "node scripts/ensure-floors.mjs && node scripts/assert-publish-filter.mjs && node scripts/assert-blog-count.mjs --snapshot && node scripts/restore-blog-md-from-git.mjs && node scripts/merge-payload-blog.mjs && node scripts/remove-spam-blog.mjs && node scripts/ensure-floors.mjs && node scripts/assert-content-clean.mjs && node scripts/validate-blog.mjs && node scripts/assert-blog-count.mjs --verify && node scripts/verify-blog-pipeline.mjs && node scripts/assert-publish-ready.mjs",
+    "rescue:live": "node scripts/rescue-live-posts.mjs",
     "export:blog-md": "node scripts/export-content-json-to-blog-md.mjs",
     "build": "npm run prepare:blog && node scripts/assert-publish-ready.mjs && astro build && node scripts/assert-publish-ready.mjs --dist && node scripts/verify-blog-routes.mjs && node scripts/guard-deploy.mjs",
     "preview": "astro preview",

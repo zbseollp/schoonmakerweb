@@ -44,8 +44,8 @@ if (!/shouldSkipPost\s*\(/.test(merge)) {
 if (!/publishStatus/.test(merge) || !/_status/.test(merge)) {
   fail(`${MERGE} must read publishStatus / _status.`);
 }
-if (!/hello-world/.test(merge) || !/blog-template/.test(merge)) {
-  fail(`${MERGE} must skip stub slugs hello-world / blog-template.`);
+if (!/isTestSlug\s*\(/.test(merge)) {
+  fail(`${MERGE} must use isTestSlug() so test/hello-world stubs never merge.`);
 }
 if (!/merge-payload-blog\.mjs/.test(prepare)) {
   fail('package.json prepare:blog must run merge-payload-blog.mjs (Payload→content.json).');
@@ -73,8 +73,12 @@ if (
 if (!/spam-slugs\.json/.test(contentTs) || !/isLivePost/.test(contentTs)) {
   fail(`${CONTENT_TS} must keep isLivePost + spam-slugs gate.`);
 }
-if (!/FUTURE_SLACK_MS/.test(contentTs)) {
-  fail(`${CONTENT_TS} must keep FUTURE_SLACK_MS so near-future CMS dates stay live.`);
+if (!/isScheduledFuture/.test(contentTs) || !/isTestSlug/.test(contentTs)) {
+  fail(`${CONTENT_TS} must hide scheduled posts until pubDate and hide test slugs.`);
+}
+const publishTs = 'src/lib/publish.ts';
+if (!existsSync(publishTs) || !/FUTURE_SLACK_MS/.test(readFileSync(publishTs, 'utf8'))) {
+  fail(`${publishTs} must define FUTURE_SLACK_MS (clock skew only, not multi-day early publish).`);
 }
 
 console.log(

@@ -3,10 +3,10 @@
  * Soft-validate content.json posts (missing title fails; odd dates warn).
  */
 import { readFileSync, existsSync } from 'node:fs';
+import { FUTURE_SLACK_MS } from './lib/publish-guards.mjs';
 
 const CONTENT = 'src/data/content.json';
 const SPAM = 'src/data/spam-slugs.json';
-const FUTURE_SLACK_MS = 48 * 60 * 60 * 1000;
 
 if (!existsSync(CONTENT)) {
   console.error(`[validate-blog] missing ${CONTENT}`);

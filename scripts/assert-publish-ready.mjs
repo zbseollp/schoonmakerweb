@@ -8,15 +8,16 @@
 import { readFileSync, existsSync, readdirSync } from 'node:fs';
 import { join } from 'node:path';
 import { execFileSync } from 'node:child_process';
+import { FUTURE_SLACK_MS, isTestSlug } from './lib/publish-guards.mjs';
 
 const EXPECTED_REPO = 'zbseollp/schoonmakerweb';
 const CONTENT = 'src/data/content.json';
 const SPAM_FILE = 'src/data/spam-slugs.json';
 const CONTENT_TS = 'src/lib/content.ts';
+const PUBLISH_TS = 'src/lib/publish.ts';
 const FLOOR_FILE = '.blog-count-floor';
 const PUBLISHED_FLOOR_FILE = '.blog-published-floor';
 const CANARY_FILE = 'scripts/blog-canaries.txt';
-const FUTURE_SLACK_MS = 48 * 60 * 60 * 1000;
 const distMode = process.argv.includes('--dist');
 
 function readCanaries() {
@@ -195,10 +196,16 @@ function assertContentPipeline() {
     );
     process.exit(1);
   }
-  if (!/FUTURE_SLACK_MS/.test(ts)) {
+  if (!existsSync(PUBLISH_TS) || !/FUTURE_SLACK_MS/.test(readFileSync(PUBLISH_TS, 'utf8'))) {
     console.error(
-      `\n[assert-publish-ready] BUILD ABORTED — ${CONTENT_TS} missing FUTURE_SLACK_MS date slack.\n` +
-        `CMS dates a few hours ahead would drop articles offline.\n`,
+      `\n[assert-publish-ready] BUILD ABORTED — ${PUBLISH_TS} missing FUTURE_SLACK_MS.\n` +
+        `Scheduled posts must stay offline until pubDate (clock skew only).\n`,
+    );
+    process.exit(1);
+  }
+  if (!/isScheduledFuture/.test(ts) || !/isTestSlug/.test(ts)) {
+    console.error(
+      `\n[assert-publish-ready] BUILD ABORTED — ${CONTENT_TS} must use isScheduledFuture + isTestSlug.\n`,
     );
     process.exit(1);
   }
@@ -227,7 +234,7 @@ function livePosts() {
   const spam = spamSet();
   const now = Date.now();
   return (data.posts || []).filter((p) => {
-    if (!p?.slug || spam.has(p.slug)) return false;
+    if (!p?.slug || spam.has(p.slug) || isTestSlug(p.slug)) return false;
     if (!p.date) return true;
     const t = Date.parse(p.date);
     if (Number.isNaN(t)) return true;
